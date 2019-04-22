@@ -1,0 +1,69 @@
+#!/bin/bash
+#Copyright (c) <2019> <James Carroll> All Rights Reserved
+#Permission is hereby granted, free of charge, to any person obtaining a copy
+#of this software and associated documentation files (the "Software"), to deal
+#in the Software without restriction, including without limitation the rights
+#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#copies of the Software, and to permit persons to whom the Software is
+#furnished to do so, subject to the following conditions:
+
+#The above copyright notice and this permission notice shall be included in all
+#copies or substantial portions of the Software.
+
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#SOFTWARE.
+
+source sandbox-configure
+source $HOME/rs3-user-config 2>/dev/null # User can add exports/vars to this file if required, as program itself is read only.
+
+gameURL="http://content.runescape.com/downloads/ubuntu/pool/non-free/r/runescape-launcher/runescape-launcher_2.2.4_amd64.deb"
+
+function downloadRS3(){
+	# Clear up previous runs
+	rm -rf $SNAP_USER_COMMON/RSPackage $SNAP_USER_COMMON/runescape $SNAP_USER_COMMON/usr
+	xmessage -timeout 120 'This app is not directly supported by Jagex. Please check the forums, Reddit, or Github for assistance!' &
+	#xdg-open https://github.com/MrCarroll/runescape-launcher
+	curl -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:66.0) Gecko/20100101 Firefox/66.0"  $gameURL -o $SNAP_USER_COMMON/RSPackage
+	[[ ! $? ]] && xmessage "Download failed. The network is either unstable, disconnected, or the developer needs to update the snap" && exit 1
+
+	# Perform package verification to prevent MITM attack
+	pushd $SNAP_USER_COMMON # Ar has no ability to specify output directory, workaround.
+	ar -x $SNAP_USER_COMMON/RSPackage
+	popd
+	gpg --import $SNAP/jagex.gpg.key
+	gpg --verify $SNAP_USER_COMMON/_gpgbuilder
+	[[ ! $? ]] && xmessage "Package GPG verification failed, the network may be compromised!" && rm $SNAP_USER_COMMON/RSPackage $SNAP_USER_COMMON/data.tar.xz $SNAP_USER_COMMON/control.tar.gz $SNAP_USER_COMMON/debian-binary $SNAP_USER_COMMON/_gpgbuilder && exit 1
+	hash=$(grep data.tar.xz $SNAP_USER_COMMON/_gpgbuilder | cut -d " " -f 2)
+	[[ ! $hash == $(sha1sum $SNAP_USER_COMMON/data.tar.xz | cut -d " " -f 1) ]] && xmessage "Package hash verification failed, the network may be compromised!" && rm -rf $SNAP_USER_COMMON/tmp $SNAP_USER_COMMON/RSPackage && exit 1
+
+	#Extract the files and put them into the right place
+	dpkg-deb -x $SNAP_USER_COMMON/RSPackage $SNAP_USER_COMMON/
+	mv $SNAP_USER_COMMON/usr/bin/runescape-launcher $SNAP_USER_COMMON/runescape-launcher
+	chmod +x $SNAP_USER_COMMON/runescape-launcher
+	mv $SNAP_USER_COMMON/usr/share/games/runescape-launcher/runescape $SNAP_USER_COMMON/runescape
+	sed -i s?/usr/share/games/runescape-launcher/?$SNAP_USER_COMMON/?g $SNAP_USER_COMMON/runescape-launcher
+	rm -rf $SNAP_USER_COMMON/RSPackage $SNAP_USER_COMMON/usr $SNAP_USER_COMMON/control.tar.gz $SNAP_USER_COMMON/data.tar.xz $SNAP_USER_COMMON/_gpgbuilder $SNAP_USER_COMMON/debian-binary
+}
+function setupDirs(){
+	mkdir $SNAP_USER_COMMON/rs3cache/ -p
+	mkdir $SNAP_USER_DATA/Jagex/launcher/ -p
+	echo cache_folder=$SNAP_USER_COMMON/rs3cache/ > $SNAP_USER_DATA/Jagex/launcher/preferences.cfg
+	echo user_folder=$SNAP_USER_COMMON/rs3cache/ >> $SNAP_USER_DATA/Jagex/launcher/preferences.cfg
+}
+[[ ! -f $SNAP_USER_COMMON/runescape-launcher ]] && downloadRS3 && setupDirs
+
+#Execute game
+$SNAP_USER_COMMON/runescape-launcher&
+
+#Hide the loading screen, since the game doesn't do this automatically.
+sleep 10
+for x in $(xdotool search --class "RuneScape")
+do
+        output=$(xprop -id $x)
+        [[ ! $output  == *"COMPOSITOR"*  ]] && xdotool windowunmap $x # Remove all RuneScape windows that aren't bypassing the compositor, suggesting they aren't using the GPU and hence aren't the game window.
+done

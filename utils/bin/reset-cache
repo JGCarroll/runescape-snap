@@ -1,0 +1,4 @@
+#!/bin/bash
+rm $SNAP_USER_COMMON/ -rf
+rm $SNAP_USER_DATA/ -rf
+echo "Finished resetting game caches!"

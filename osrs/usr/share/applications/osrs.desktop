@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Oldschool RuneScape
+Comment="The Massively Multiplayer Online Role Playing Game set in the fantasy land of Gielinor"
+Exec=osrs-launcher
+Icon=usr/share/pixmaps/osrs.png
+Type=Application
+Categories=Game;

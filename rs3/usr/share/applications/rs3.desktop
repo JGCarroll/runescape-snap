@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=RuneScape
+Comment="The Massively Multiplayer Online Role Playing Game set in the fantasy land of Gielinor"
+Exec=rs3-launcher
+Icon=usr/share/pixmaps/rs3.png
+Type=Application
+Categories=Game;

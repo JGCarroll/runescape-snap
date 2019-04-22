@@ -1,0 +1,82 @@
+name: rslauncher
+base: core
+title: Runescape
+version: '1'
+summary: RuneScape, the free MMORPG by Jagex LTD
+description: |
+  Explore the fantasy world of Gielinor in the worlds most popular free to play MMORPG!
+  This snap provides both Old School Runescape and RuneScape 3!
+  This is an unofficial package.
+type: app
+grade: stable
+confinement: strict
+license: MIT
+architectures:
+  - build-on: amd64
+    run-on: amd64
+parts:
+  glew1-10:
+    plugin: dump
+    source: http://launchpadlibrarian.net/161405671/libglew1.10_1.10.0-3_amd64.deb
+    source-type: deb
+  rs3:
+    plugin: dump
+    source: rs3/
+    stage-packages:
+      - x11-utils
+      - curl
+      - dpkg
+      - libpango-1.0-0
+      - libcairo2
+      - libgdk-pixbuf2.0-0
+      - libpangocairo-1.0-0
+      - libgtk2.0-0
+      - libcurl3
+      - libsdl2-2.0-0
+      - libpulse0
+      - xdotool
+      - apt
+      - libglu1-mesa
+      - dpkg-dev
+      - gnupg
+    override-build: |
+      snapcraftctl build
+      echo "Grabbing Jagex Signing Key"
+      curl https://content.runescape.com/downloads/ubuntu/runescape.gpg.key -o $SNAPCRAFT_PART_INSTALL/jagex.gpg.key 
+  osrs:
+    plugin: dump
+    source: osrs
+    stage-packages:
+      - x11-utils
+      - curl
+      - openjdk-8-jre
+      - p7zip-full
+    build-packages:
+      - ca-certificates
+      - ca-certificates-java
+  utils:
+    plugin: dump
+    source: utils/
+apps:
+  rs3:
+    command: rs3-launcher
+    desktop: usr/share/applications/rs3.desktop
+    plugs:
+      - desktop
+      - network
+      - pulseaudio
+      - x11
+      - opengl
+  osrs:
+    command: osrs-launcher
+    desktop: usr/share/applications/osrs.desktop
+    plugs:
+      - desktop
+      - network
+      - pulseaudio
+      - x11
+      - opengl
+  reset:
+    command: reset-cache
+  sources:
+    command: list-sources

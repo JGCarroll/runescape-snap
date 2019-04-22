@@ -1,0 +1,42 @@
+#!/bin/bash
+#Copyright (c) <2019> <James Carroll> All Rights Reserved
+
+#Permission is hereby granted, free of charge, to any person obtaining a copy
+#of this software and associated documentation files (the "Software"), to deal
+#in the Software without restriction, including without limitation the rights
+#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#copies of the Software, and to permit persons to whom the Software is
+#furnished to do so, subject to the following conditions:
+
+#The above copyright notice and this permission notice shall be included in all
+#copies or substantial portions of the Software.
+
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#SOFTWARE.
+
+source sandbox-configure
+uiScale=1
+source $HOME/osrs-user-config 2>/dev/null # User can add exports/vars to this file if required, as program itself is read only.
+
+gameURL="http://www.runescape.com/downloads/OldSchool.dmg"
+
+downloadOSRS(){
+	rm $SNAP_USER_COMMON/osrs.jar
+	xmessage -timeout 120 'This app is not directly supported by Jagex. Please check the forums, Reddit, or Github for assistance!' &
+	#xdg-open https://github.com/MrCarroll/runescape-launcher
+	curl -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:66.0) Gecko/20100101 Firefox/66.0"  $gameURL -o $SNAP_USER_COMMON/OSRSPackage
+	[[ ! ?$ ]] && xmessage "Download failed, either the network is unavilable or the snap needs updating" && exit 1
+	$SNAP/usr/lib/p7zip/7z x $SNAP_USER_COMMON/OSRSPackage -oc:$SNAP_USER_COMMON/osrs/
+	$SNAP/usr/lib/p7zip/7z x $SNAP_USER_COMMON/osrs/4.hfs -oc:$SNAP_USER_COMMON/osrs/
+	mv $SNAP_USER_COMMON'/osrs/Old School RuneScape/Old School RuneScape.app/Contents/Java/jagexappletviewer.jar' $SNAP_USER_COMMON/osrs.jar
+    	chmod +x $SNAP_USER_COMMON/osrs.jar
+	rm -rf $SNAP_USER_COMMON/osrs $SNAP_USER_COMMON/OSRSPackage
+}
+
+[[ ! -f $SNAP_USER_COMMON/osrs.jar ]] && downloadOSRS
+$SNAP/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java -Djava.class.path=$SNAP_USER_COMMON/osrs.jar -Duser.home=$SNAP_USER_COMMON/ -Dsun.java2d.uiScale=$uiScale -Dsun.java2d.nodraw=true -Dcom.jagex.config=http://oldschool.runescape.com/jav_config.ws -Djava.system.class.loader=app.systemclassloader -Xmx512m -Xss2m -XX:CompileThreshold=1500 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC jagexappletviewer $SNAP_USER_COMMON >/dev/null &
