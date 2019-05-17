@@ -24,5 +24,15 @@ The dangerous flag is required to install any snap package that lacks signature 
 
 ## General Info
 
-The snap does not contain Jagex code, and will dynamically fetch this from the Runescape servers on first run. If Jagex changes these links, a new revision of this snap will need to be pushed.
-The snap uses Ubuntu 16.04 as a base due to less configuration changes required to get the upstream game to work. Ubuntu 18.04, supported until 2028, is also compatible but not utilised.
+The snap does not contain Jagex code, and will dynamically fetch this from the Runescape servers on first run.
+The snap uses Ubuntu 16.04 as a base due to less configuration changes required to get the upstream game to work. Ubuntu 18.04, supported until 2028, is also compatible but not utilised whilst 16.04 retains upstream support.
+
+## Usage instructions
+
+Once installed, desktop icons should be available in your desktops standard start menu. You can also launch the game via the terminal. 
+
+**rslauncher.rs3**
+
+**rslauncher.osrs**
+
+**rslauncher.reset** to clear the user files for both games

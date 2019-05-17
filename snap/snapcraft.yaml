@@ -25,7 +25,6 @@ parts:
     stage-packages:
       - x11-utils
       - curl
-      - dpkg
       - libpango-1.0-0
       - libcairo2
       - libgdk-pixbuf2.0-0
@@ -35,9 +34,8 @@ parts:
       - libsdl2-2.0-0
       - libpulse0
       - xdotool
-      - apt
       - libglu1-mesa
-      - dpkg-dev
+      - dpkg
       - gnupg
     override-build: |
       snapcraftctl build
@@ -63,6 +61,7 @@ apps:
     desktop: usr/share/applications/rs3.desktop
     plugs:
       - desktop
+      - desktop-legacy
       - network
       - pulseaudio
       - x11
@@ -72,6 +71,7 @@ apps:
     desktop: usr/share/applications/osrs.desktop
     plugs:
       - desktop
+      - desktop-legacy
       - network
       - pulseaudio
       - x11

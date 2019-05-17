@@ -5,3 +5,4 @@ Exec=rs3-launcher
 Icon=usr/share/pixmaps/rs3.png
 Type=Application
 Categories=Game;
+MimeType=x-scheme-handler/rs-launch;x-scheme-handler/rs-launchs

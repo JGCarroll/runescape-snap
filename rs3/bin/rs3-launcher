@@ -18,52 +18,86 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
+echo "Preparing sandbox environment..."
 source sandbox-configure
 source $HOME/rs3-user-config 2>/dev/null # User can add exports/vars to this file if required, as program itself is read only.
 
-gameURL="http://content.runescape.com/downloads/ubuntu/pool/non-free/r/runescape-launcher/runescape-launcher_2.2.4_amd64.deb"
+repoRoot="http://content.runescape.com/downloads/ubuntu/"
+repo="http://content.runescape.com/downloads/ubuntu/dists/trusty/"
+repoReleaseFile="Release"
+repoReleaseSignature="Release.gpg"
+
+networkError="Invalid response from Jagex whilst running first time setup. Is the network fully functional?"
+firstRunMessage="This snap is not endorsed by Jagex. For support, check out the Runescape Tech Forums, Reddit, or the Github repository!"
+
 
 function downloadRS3(){
-	# Clear up previous runs
-	rm -rf $SNAP_USER_COMMON/RSPackage $SNAP_USER_COMMON/runescape $SNAP_USER_COMMON/usr
-	xmessage -timeout 120 'This app is not directly supported by Jagex. Please check the forums, Reddit, or Github for assistance!' &
-	#xdg-open https://github.com/MrCarroll/runescape-launcher
-	curl -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:66.0) Gecko/20100101 Firefox/66.0"  $gameURL -o $SNAP_USER_COMMON/RSPackage
-	[[ ! $? ]] && xmessage "Download failed. The network is either unstable, disconnected, or the developer needs to update the snap" && exit 1
+	# Does not overwrite any existing key in the event the public key is changed.
+	echo Importing Jagex Signing key
+	gpg --import $SNAP/jagex.gpg.key  
 
-	# Perform package verification to prevent MITM attack
-	pushd $SNAP_USER_COMMON # Ar has no ability to specify output directory, workaround.
-	ar -x $SNAP_USER_COMMON/RSPackage
-	popd
-	gpg --import $SNAP/jagex.gpg.key
-	gpg --verify $SNAP_USER_COMMON/_gpgbuilder
-	[[ ! $? ]] && xmessage "Package GPG verification failed, the network may be compromised!" && rm $SNAP_USER_COMMON/RSPackage $SNAP_USER_COMMON/data.tar.xz $SNAP_USER_COMMON/control.tar.gz $SNAP_USER_COMMON/debian-binary $SNAP_USER_COMMON/_gpgbuilder && exit 1
-	hash=$(grep data.tar.xz $SNAP_USER_COMMON/_gpgbuilder | cut -d " " -f 2)
-	[[ ! $hash == $(sha1sum $SNAP_USER_COMMON/data.tar.xz | cut -d " " -f 1) ]] && xmessage "Package hash verification failed, the network may be compromised!" && rm -rf $SNAP_USER_COMMON/tmp $SNAP_USER_COMMON/RSPackage && exit 1
+	# Clear up previous runs
+	echo Clearing previous installers
+	rm -rf $SNAP_USER_COMMON/runescape $SNAP_USER_COMMON/usr $SNAP_USER_COMMON/repoRelease $SNAP_USER_COMMON/repoRelease.gpg $SNAP_USER_COMMON/packages $SNAP_USER_COMMON/rs.deb
+	xmessage -timeout 120 $firstRunMessage &
+
+	echo "Downloading RuneScape repository info"
+	curl -s $repo$repoReleaseFile -o $SNAP_USER_COMMON/repoRelease
+	echo "Downloading RuneScape repository info signature"
+	curl -s $repo$repoReleaseSignature -o $SNAP_USER_COMMON/repoRelease.gpg
+	gpg --verify $SNAP_USER_COMMON/repoRelease.gpg $SNAP_USER_COMMON/repoRelease
+	[[ ! $? ]] && xmessage $networkError && exit 1
+	echo "Repository info looks valid!"
+	packageFile=$(grep "SHA256" -A 10 $SNAP_USER_COMMON/repoRelease | grep amd64/Packages$ | cut -d " " -f 4)	
+	packageFileHash=$(grep "SHA256" -A 10 $SNAP_USER_COMMON/repoRelease | grep amd64/Packages$ | cut -d " " -f 2)
+
+	echo "Downloading repository package list"
+	curl -s $repo$packageFile -o $SNAP_USER_COMMON/packages
+	[[ ! $packageFileHash == $(sha256sum $SNAP_USER_COMMON/packages | cut -d " " -f 1) ]] && xmessage $networkError && exit 1
+	echo "Repository package list looks valid!"
+	debFile=$(grep Filename $SNAP_USER_COMMON/packages | cut -d " " -f 2)
+	debHash=$(grep SHA256 $SNAP_USER_COMMON/packages | cut -d " " -f 2)
+	echo "Downloading RuneScape installer"
+	curl -s $repoRoot$debFile -o $SNAP_USER_COMMON/rs.deb
+	[[ ! $debHash == $(sha256sum $SNAP_USER_COMMON/rs.deb | cut -d " " -f 1) ]] && xmessage $networkError && exit 1
+	echo "Runescape installer looks valid!"
 
 	#Extract the files and put them into the right place
-	dpkg-deb -x $SNAP_USER_COMMON/RSPackage $SNAP_USER_COMMON/
+	dpkg-deb -x $SNAP_USER_COMMON/rs.deb $SNAP_USER_COMMON/
 	mv $SNAP_USER_COMMON/usr/bin/runescape-launcher $SNAP_USER_COMMON/runescape-launcher
 	chmod +x $SNAP_USER_COMMON/runescape-launcher
 	mv $SNAP_USER_COMMON/usr/share/games/runescape-launcher/runescape $SNAP_USER_COMMON/runescape
 	sed -i s?/usr/share/games/runescape-launcher/?$SNAP_USER_COMMON/?g $SNAP_USER_COMMON/runescape-launcher
-	rm -rf $SNAP_USER_COMMON/RSPackage $SNAP_USER_COMMON/usr $SNAP_USER_COMMON/control.tar.gz $SNAP_USER_COMMON/data.tar.xz $SNAP_USER_COMMON/_gpgbuilder $SNAP_USER_COMMON/debian-binary
+	echo "Clearing up downloads"
+	rm -rf $SNAP_USER_COMMON/usr $SNAP_USER_COMMON/repoRelease $SNAP_USER_COMMON/repoRelease.gpg $SNAP_USER_COMMON/packages $SNAP_USER_COMMON/rs.deb
+	
 }
 function setupDirs(){
+	echo "Directing cache to $SNAP_USER_COMMON"
+	# Set up the cache location to exist in $SNAP_USER_COMMON rather than $HOME, preventing disk waste on upgrades when $HOME is snapshot.
 	mkdir $SNAP_USER_COMMON/rs3cache/ -p
 	mkdir $SNAP_USER_DATA/Jagex/launcher/ -p
 	echo cache_folder=$SNAP_USER_COMMON/rs3cache/ > $SNAP_USER_DATA/Jagex/launcher/preferences.cfg
 	echo user_folder=$SNAP_USER_COMMON/rs3cache/ >> $SNAP_USER_DATA/Jagex/launcher/preferences.cfg
 }
-[[ ! -f $SNAP_USER_COMMON/runescape-launcher ]] && downloadRS3 && setupDirs
+[[ ! -f $SNAP_USER_COMMON/runescape-launcher ]] && echo "Launcher doesn't appear to exist, running setup!" && downloadRS3 && setupDirs
 
 #Execute game
+echo "Launching RuneScape"
 $SNAP_USER_COMMON/runescape-launcher&
 
 #Hide the loading screen, since the game doesn't do this automatically.
-sleep 10
-for x in $(xdotool search --class "RuneScape")
-do
+windowsInitially=$(xdotool search --onlyvisible --class  "RuneScape" | wc -l)
+windowsNeeded=$(( $windowsInitially + 2)) # When this many windows are open, clear all none game windows.
+breakTime=$(( $(date +%s) + 60 )) # Used to escape infinite loop in event of unexpected client behaviour.
+
+until [[ $(xdotool search --onlyvisible --class "RuneScape" | wc -l) -eq $windowsNeeded ]]; do
+	sleep 2
+	[[ $(date +%s) -gt $breakTime ]] && echo "Error: Exiting launcher due to game loading timeout" && exit 1
+done
+echo "Hiding launcher window"
+sleep 2 #Prevent race condition!
+for x in $(xdotool search --class "RuneScape"); do
         output=$(xprop -id $x)
         [[ ! $output  == *"COMPOSITOR"*  ]] && xdotool windowunmap $x # Remove all RuneScape windows that aren't bypassing the compositor, suggesting they aren't using the GPU and hence aren't the game window.
 done
