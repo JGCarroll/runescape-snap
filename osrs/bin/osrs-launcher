@@ -1,5 +1,5 @@
 #!/bin/bash
-#Copyright (c) <2019> <James Carroll> All Rights Reserved
+#Copyright (c) <2019> <James Carroll>
 
 #Permission is hereby granted, free of charge, to any person obtaining a copy
 #of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
 echo "Preparing sandbox environment..."
 uiScale=1
 source sandbox-configure
-source $HOME/osrs-user-config 2>/dev/null # User can add exports/vars to this file if required, as program itself is read only.
+source "$HOME/osrs-user-config" 2>/dev/null # User can add exports/vars to this file if required, as program itself is read only.
 
 networkError="Invalid response from Jagex whilst running first time setup. Is the network fully functional?"
 firstRunMessage="This snap is not endorsed by Jagex. For support, check out the Runescape Tech Forums, Reddit, or the Github repository!"
@@ -30,20 +30,28 @@ gameURL="http://www.runescape.com/downloads/OldSchool.dmg"
 
 downloadOSRS(){
 	echo Clearing previous installers
-	rm $SNAP_USER_COMMON/osrs.jar $SNAP_USER_COMMON/osrs $SNAP_USER_COMMON/OSRSPackage
-	xmessage -timeout 120 $firstRunMessage &
+	rm "$SNAP_USER_COMMON/osrs.jar" "$SNAP_USER_COMMON/osrs" "$SNAP_USER_COMMON/OSRSPackage"
+	xmessage -timeout 120 "$firstRunMessage" &
 	echo Downloading OSRS package
-	curl -s -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:67.0) Gecko/20100101 Firefox/67.0"  $gameURL -o $SNAP_USER_COMMON/OSRSPackage
-	[[ ! ?$ ]] && xmessage $networkError && exit 1
+	if ! curl -s "$gameURL" -o "$SNAP_USER_COMMON/OSRSPackage"
+	then 
+		xmessage "$networkError"
+		exit 1
+	fi
 	echo "Extracting OSRS package"
-	$SNAP/usr/lib/p7zip/7z x $SNAP_USER_COMMON/OSRSPackage -oc:$SNAP_USER_COMMON/osrs/ >/dev/null
-	$SNAP/usr/lib/p7zip/7z x $SNAP_USER_COMMON/osrs/4.hfs -oc:$SNAP_USER_COMMON/osrs/ >/dev/null
-	mv $SNAP_USER_COMMON'/osrs/Old School RuneScape/Old School RuneScape.app/Contents/Java/jagexappletviewer.jar' $SNAP_USER_COMMON/osrs.jar
-    	chmod +x $SNAP_USER_COMMON/osrs.jar
+	"$SNAP"/usr/lib/p7zip/7z x "$SNAP_USER_COMMON/OSRSPackage" -o"$SNAP_USER_COMMON"/osrs/ >/dev/null
+	"$SNAP"/usr/lib/p7zip/7z x "$SNAP_USER_COMMON/osrs/4.hfs" -o"$SNAP_USER_COMMON"/osrs/ >/dev/null
+	mv "$SNAP_USER_COMMON/osrs/Old School RuneScape/Old School RuneScape.app/Contents/Java/jagexappletviewer.jar" "$SNAP_USER_COMMON/osrs.jar"
+    	chmod +x "$SNAP_USER_COMMON/osrs.jar"
 	echo "Clearing installers"
-	rm -rf $SNAP_USER_COMMON/osrs $SNAP_USER_COMMON/OSRSPackage
+	rm -rf "$SNAP_USER_COMMON/osrs" "$SNAP_USER_COMMON/OSRSPackage"
 }
 
-[[ ! -f $SNAP_USER_COMMON/osrs.jar ]] && echo "Launcher doesn't appear to exist, running setup!" && downloadOSRS
+if [[ ! -f "$SNAP_USER_COMMON/osrs.jar" ]]
+then
+	echo "Launcher doesn't appear to exist, running setup!"
+	downloadOSRS
+fi
+
 echo "Launching OSRS"
-$SNAP/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java -Djava.class.path=$SNAP_USER_COMMON/osrs.jar -Duser.home=$SNAP_USER_COMMON/ -Dsun.java2d.uiScale=$uiScale -Dsun.java2d.nodraw=true -Dcom.jagex.config=http://oldschool.runescape.com/jav_config.ws -Djava.system.class.loader=app.systemclassloader -Xmx512m -Xss2m -XX:CompileThreshold=1500 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC jagexappletviewer $SNAP_USER_COMMON >/dev/null &
+"$SNAP/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java" -Djava.class.path="$SNAP_USER_COMMON"/osrs.jar -Duser.home="$SNAP_USER_COMMON"/ -Dsun.java2d.uiScale=$uiScale -Dsun.java2d.nodraw=true -Dcom.jagex.config=http://oldschool.runescape.com/jav_config.ws -Djava.system.class.loader=app.systemclassloader -Xmx512m -Xss2m -XX:CompileThreshold=1500 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC jagexappletviewer "$SNAP_USER_COMMON" >/dev/null &

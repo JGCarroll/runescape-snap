@@ -1,5 +1,5 @@
 #!/bin/bash
 
 echo This snap contains several dependencies of which have various different licenses. These dependencies are from a traditional Ubuntu system.
-echo Feel free to take a look at https://github.com/MrJGC/runescape-launcher for the source code of the snap itself.
+echo Feel free to take a look at https://github.com/MrCarroll/runescape-launcher for the source code of the snap itself.
 echo For the binaries which the snap bundles, you can find the sources and binaries at https://packages.ubuntu.com/
