@@ -499,3 +499,5 @@ IBUS_CONFIG_PATH=$XDG_CONFIG_HOME/ibus
 mkdir -p $IBUS_CONFIG_PATH
 [ -d $IBUS_CONFIG_PATH/bus ] && rm -rf $IBUS_CONFIG_PATH/bus
 ln -sfn $REALHOME/.config/ibus/bus $IBUS_CONFIG_PATH
+
+[ $needs_update = true ] && echo "SNAP_DESKTOP_LAST_REVISION=$SNAP_REVISION" > $SNAP_USER_DATA/.last_revision
