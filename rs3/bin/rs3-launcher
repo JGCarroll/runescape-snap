@@ -105,7 +105,7 @@ function setupDirs(){
 
 #Execute game
 echo "Launching RuneScape"
-"$SNAP_USER_COMMON"/runescape-launcher&
+"$SNAP_USER_COMMON"/runescape-launcher "$@" &
 
 #Hide the loading screen, since the game doesn't do this automatically.
 windowsInitially=$(xdotool search --onlyvisible --class  "RuneScape" | wc -l)

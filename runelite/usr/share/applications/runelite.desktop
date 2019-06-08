@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=RuneLite
+Comment="The community developed OSRS client!"
+Exec=runelite-launcher
+Icon=usr/share/pixmaps/runelite.png
+Type=Application
+Categories=Game;

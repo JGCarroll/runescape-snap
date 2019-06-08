@@ -5,7 +5,7 @@ version: '1'
 summary: RuneScape, the free MMORPG by Jagex LTD
 description: |
   Explore the fantasy world of Gielinor in the worlds most popular free to play MMORPG!
-  This snap provides both Old School Runescape and RuneScape 3!
+  This snap provides both Old School RuneScape (Upstream and RuneLite) and RuneScape 3 (NXT)!
   This is an unofficial package.
 type: app
 grade: stable
@@ -51,6 +51,20 @@ parts:
       - curl
       - openjdk-8-jre
       - p7zip-full
+      - libpulse0
+    build-packages:
+      - ca-certificates
+      - ca-certificates-java
+  runelite:
+    plugin: dump
+    source: runelite
+    stage-packages:
+      - x11-utils
+      - curl
+      - openjdk-8-jre
+      - p7zip-full
+      - libglu1-mesa
+      - libpulse0
     build-packages:
       - ca-certificates
       - ca-certificates-java
@@ -71,6 +85,16 @@ apps:
   osrs:
     command: osrs-launcher
     desktop: usr/share/applications/osrs.desktop
+    plugs:
+      - desktop
+      - desktop-legacy
+      - network
+      - pulseaudio
+      - x11
+      - opengl
+  runelite:
+    command: runelite-launcher
+    desktop: usr/share/applications/runelite.desktop
     plugs:
       - desktop
       - desktop-legacy
