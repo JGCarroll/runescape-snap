@@ -21,8 +21,12 @@
 
 echo "Preparing sandbox environment..."
 source sandbox-configure
-source "$HOME/rs3-user-config" 2>/dev/null # User can add exports/vars to this file if required, as program itself is read only.
-
+if [[ -f "$SNAP_USER_DATA/rs3-user-config" ]]
+then
+        echo "Found RS3 config"
+        source "$SNAP_USER_DATA/rs3-user-config" # User can add exports/vars$
+        echo "Finished reading RS3 config"
+fi
 repoRoot="http://content.runescape.com/downloads/ubuntu/"
 repo="http://content.runescape.com/downloads/ubuntu/dists/trusty/"
 repoReleaseFile="Release"
@@ -32,7 +36,7 @@ networkError="Invalid response from Jagex whilst running first time setup. Is th
 firstRunMessage="This snap is not endorsed by Jagex. For support, check out the Runescape Tech Forums, Reddit, or the Github repository!"
 
 
-function downloadRS3(){
+function DownloadRS3(){
 	# Does not overwrite any existing key in the event the public key is changed.
 	echo Importing Jagex Signing key
 	gpg --batch --import "$SNAP/jagex.gpg.key" 
@@ -61,7 +65,7 @@ function downloadRS3(){
 	echo "Downloading repository package list"
 	curl -s "$repo$packageFile" -o "$SNAP_USER_COMMON/packages"
 
-	if [[ $packageFileHash -ne $(sha256sum "$SNAP_USER_COMMON/packages" | cut -d " " -f 1) ]]
+	if [[ $packageFileHash != $(sha256sum "$SNAP_USER_COMMON/packages" | cut -d " " -f 1) ]]
 	then
 		xmessage "$networkError" 
 		exit 1
@@ -74,7 +78,7 @@ function downloadRS3(){
 	echo "Downloading RuneScape installer"
 	curl -s "$repoRoot$debFile" -o "$SNAP_USER_COMMON/rs.deb"
 
-	if [[ $debHash -ne $(sha256sum "$SNAP_USER_COMMON/rs.deb" | cut -d " " -f 1) ]]
+	if [[ $debHash != $(sha256sum "$SNAP_USER_COMMON/rs.deb" | cut -d " " -f 1) ]]
 	then 
 		xmessage "$networkError"
 		exit 1
@@ -92,7 +96,7 @@ function downloadRS3(){
 	rm -rf "${SNAP_USER_COMMON:?}/usr" "$SNAP_USER_COMMON/repoRelease" "$SNAP_USER_COMMON/repoRelease.gpg" "$SNAP_USER_COMMON/packages" "$SNAP_USER_COMMON/rs.deb"
 	
 }
-function setupDirs(){
+function SetupDirs(){
 	echo "Directing cache to $SNAP_USER_COMMON"
 	# Set up the cache location to exist in $SNAP_USER_COMMON rather than $HOME, preventing disk waste on upgrades when $HOME is snapshot.
 	mkdir "$SNAP_USER_COMMON/rs3cache/" -p
@@ -101,7 +105,7 @@ function setupDirs(){
 	echo user_folder="$SNAP_USER_COMMON"/rs3cache/ >> "$SNAP_USER_DATA/Jagex/launcher/preferences.cfg"
 }
 
-[[ ! -f "$SNAP_USER_COMMON/runescape-launcher" ]] && echo "Launcher doesn't appear to exist, running setup!" && downloadRS3 && setupDirs
+[[ ! -f "$SNAP_USER_COMMON/runescape-launcher" ]] && echo "Launcher doesn't appear to exist, running setup!" && DownloadRS3 && SetupDirs
 
 #Execute game
 echo "Launching RuneScape"

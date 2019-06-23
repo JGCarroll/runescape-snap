@@ -22,18 +22,30 @@
 echo "Preparing sandbox environment..."
 export _JAVA_OPTIONS=-Duser.home="$SNAP_USER_COMMON"
 source sandbox-configure
-source "$HOME/runelite-user-config" 2>/dev/null # User can add exports/vars to this file if required, as program itself is read only.
+if [[ -f "$SNAP_USER_DATA/runelite-user-config" ]]
+then
+        echo "Found RuneLite config"
+        source "$SNAP_USER_DATA/runelite-user-config" # User can add exports/vars$
+        echo "Finished reading RuneLite config"
+fi
+
 networkError="Invalid response from Github/RuneLite whilst running first time setup. Is the network fully functional?"
 firstRunMessage="This snap is not endorsed by Jagex. For support, check out the Runescape Tech Forums, Reddit, or the Github repository!"
 
-downloadRuneLite(){
+DownloadRuneLite(){
 	xmessage -timeout 120 "$firstRunMessage" &
 	xmessage -timeout 120 "RuneLite in this snap is still experimental! If you have errors, consider disabling hardware acceleration!" &
-	echo Download RuneLite
+	echo Downloading RuneLite
 	file=$(curl https://github.com/runelite/launcher/releases/latest -L | sed -n 's/.*href="\([^"]*\).*/\1/p' | grep .jar)
-	if ! curl -s -L github.com$file -o "$SNAP_USER_COMMON/runelite.jar"
+	if [[ -z "$file" ]]
 	then
-		xmessage $networkError
+		xmessage "$networkError"
+		echo "Unable to parse Github"
+		exit 1
+	fi
+	if ! curl -s -L https://github.com"$file" -o "$SNAP_USER_COMMON/runelite.jar"
+	then
+		xmessage "$networkError"
 		exit 1
 	fi
 }
@@ -41,8 +53,8 @@ downloadRuneLite(){
 if [[ ! -f "$SNAP_USER_COMMON/runelite.jar" ]]
 then
 	echo "Launcher doesn't appear to exist, running setup!"
-	downloadRuneLite
+	DownloadRuneLite
 fi
 
 echo "Launching RuneLite"
-"$SNAP/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java" -jar "$SNAP_USER_COMMON/runelite.jar" $opts >/dev/null &
+"$SNAP/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java" -jar "$SNAP_USER_COMMON/runelite.jar" "$opts" >/dev/null &
