@@ -105,7 +105,12 @@ function SetupDirs(){
 	echo user_folder="$SNAP_USER_COMMON"/rs3cache/ >> "$SNAP_USER_DATA/Jagex/launcher/preferences.cfg"
 }
 
-[[ ! -f "$SNAP_USER_COMMON/runescape-launcher" ]] && echo "Launcher doesn't appear to exist, running setup!" && DownloadRS3 && SetupDirs
+if [[ ! -f "$SNAP_USER_COMMON/runescape-launcher" ]]
+then
+	echo "Launcher doesn't appear to exist, running setup!" 
+	DownloadRS3
+	SetupDirs
+fi
 
 #Execute game
 echo "Launching RuneScape"
