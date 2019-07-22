@@ -52,6 +52,7 @@ parts:
       - openjdk-8-jre
       - p7zip-full
       - libpulse0
+      - libglu1-mesa
     build-packages:
       - ca-certificates
       - ca-certificates-java

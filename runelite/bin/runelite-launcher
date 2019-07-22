@@ -36,7 +36,7 @@ DownloadRuneLite(){
 	xmessage -timeout 120 "$firstRunMessage" &
 	xmessage -timeout 120 "RuneLite in this snap is still experimental! If you have errors, consider disabling hardware acceleration!" &
 	echo Downloading RuneLite
-	file=$(curl https://github.com/runelite/launcher/releases/latest -L | sed -n 's/.*href="\([^"]*\).*/\1/p' | grep .jar)
+	file=$(curl https://github.com/runelite/launcher/releases/latest -L -s  | sed -n 's/.*href="\([^"]*\).*/\1/p' | grep .jar)
 	if [[ -z "$file" ]]
 	then
 		xmessage "$networkError"
@@ -46,6 +46,8 @@ DownloadRuneLite(){
 	if ! curl -s -L https://github.com"$file" -o "$SNAP_USER_COMMON/runelite.jar"
 	then
 		xmessage "$networkError"
+		echo "Unexpected response from github"
+		echo "file = $file"
 		exit 1
 	fi
 }
@@ -57,4 +59,5 @@ then
 fi
 
 echo "Launching RuneLite"
-"$SNAP/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java" -jar "$SNAP_USER_COMMON/runelite.jar" "$opts" >/dev/null &
+"$SNAP/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java" -jar "$SNAP_USER_COMMON/runelite.jar" "$opts" "$@" >/dev/null &
+sleep 2 #Makes the output in terminal slightly cleaner if run in CLI
