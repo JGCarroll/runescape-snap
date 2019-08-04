@@ -83,6 +83,8 @@ apps:
       - pulseaudio
       - x11
       - opengl
+    environment:
+      PULSE_LATENCY_MSEC: 100
   osrs:
     command: osrs-launcher
     desktop: usr/share/applications/osrs.desktop
