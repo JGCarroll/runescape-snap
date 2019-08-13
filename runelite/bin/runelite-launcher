@@ -29,23 +29,19 @@ then
         echo "Finished reading RuneLite config"
 fi
 
-networkError="Invalid response from Github/RuneLite whilst running first time setup. Is the network fully functional?"
-firstRunMessage="This snap is not endorsed by Jagex. For support, check out the Runescape Tech Forums, Reddit, or the Github repository!"
-
 DownloadRuneLite(){
-	xmessage -timeout 120 "$firstRunMessage" &
-	xmessage -timeout 120 "RuneLite in this snap is still experimental! If you have errors, consider disabling hardware acceleration!" &
+	notify-send 'RuneScape snap' 'This client bundle is authored by Hmm and recieves no official support from Jagex. Furthermore, the RuneLite client is made by the community and is effectively experimental.' --icon=dialog-information -t 10
 	echo Downloading RuneLite
-	file=$(curl https://github.com/runelite/launcher/releases/latest -L -s  | sed -n 's/.*href="\([^"]*\).*/\1/p' | grep .jar)
+	file=$(wget https://github.com/runelite/launcher/releases/latest -q -O-  | sed -n 's/.*href="\([^"]*\).*/\1/p' | grep .jar)
 	if [[ -z "$file" ]]
 	then
-		xmessage "$networkError"
+		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' --icon=dialog-information -t 10
 		echo "Unable to parse Github"
 		exit 1
 	fi
-	if ! curl -s -L https://github.com"$file" -o "$SNAP_USER_COMMON/runelite.jar"
+	if ! wget https://github.com"$file" -O "$SNAP_USER_COMMON/runelite.jar"
 	then
-		xmessage "$networkError"
+		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' --icon=dialog-information -t 10
 		echo "Unexpected response from github"
 		echo "file = $file"
 		exit 1
@@ -59,5 +55,4 @@ then
 fi
 
 echo "Launching RuneLite"
-"$SNAP/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java" -jar "$SNAP_USER_COMMON/runelite.jar" "$opts" "$@" >/dev/null &
-sleep 2 #Makes the output in terminal slightly cleaner if run in CLI
+"$SNAP/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java" -jar "$SNAP_USER_COMMON/runelite.jar" "$opts" "$@"

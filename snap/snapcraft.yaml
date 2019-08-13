@@ -1,12 +1,12 @@
 name: rslauncher
-base: core
+base: core18
 title: Runescape
 version: '1'
 summary: RuneScape, the free MMORPG by Jagex LTD
 description: |
   Explore the fantasy world of Gielinor in the worlds most popular free to play MMORPG!
   This snap provides both Old School RuneScape (Upstream and RuneLite) and RuneScape 3 (NXT)!
-  This is an unofficial package.
+  This is an unofficial package provided by Hmm.
 type: app
 grade: stable
 confinement: strict
@@ -18,41 +18,81 @@ environment:
   DISABLE_WAYLAND: 1
 parts:
   glew1-10:
-    plugin: dump
-    source: http://launchpadlibrarian.net/161405671/libglew1.10_1.10.0-3_amd64.deb
-    source-type: deb
+    plugin: make
+    source: https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/glew/1.10.0-3/glew_1.10.0.orig.tar.gz
+    artifacts: 
+      - lib/libGLEW.so.1.10.0
+      - lib/libGLEW.so
+      - lib/libGLEWmx.so
+      - lib/libGLEWmx.so.1.10.0
+    build-packages:
+      - make
+      - g++
+      - libx11-dev
+      - libgl1-mesa-dev
+      - libxmu-dev
+      - libxmu-headers
+      - libxi-dev
+      - quilt
+    override-pull: |
+      snapcraftctl pull
+      cd $SNAPCRAFT_PART_SRC
+      wget https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/glew/1.10.0-3/glew_1.10.0-3.debian.tar.gz -O patches.tar.xz
+      tar xf patches.tar.xz
+      rm patches.tar.xz
+      export QUILT_PATCHES=debian/patches
+      quilt push -a
+    override-build: |
+      snapcraftctl build
+      ln $SNAPCRAFT_PART_INSTALL/lib/libGLEW.so.1.10.0 $SNAPCRAFT_PART_INSTALL/lib/libGLEW.so.1.10 
+  libpng12:
+    plugin: cmake
+    source: http://archive.ubuntu.com/ubuntu/pool/main/libp/libpng/libpng_1.2.54.orig.tar.xz    
+    build-packages:
+      - gcc
+      - zlib1g-dev
+      - quilt
+    override-pull: |
+      snapcraftctl pull
+      cd $SNAPCRAFT_PART_SRC
+      wget http://archive.ubuntu.com/ubuntu/pool/main/libp/libpng/libpng_1.2.54-1ubuntu1.1.debian.tar.xz -O patches.tar.xz
+      tar xf $SNAPCRAFT_PART_SRC/patches.tar.xz -C $SNAPCRAFT_PART_SRC
+      rm $SNAPCRAFT_PART_SRC/patches.tar.xz 
+      export QUILT_PATCHES=debian/patches
+      quilt push -a
   rs3:
     plugin: dump
     source: rs3/
     stage-packages:
+      - libnotify-bin
       - x11-utils
-      - curl
+      - libcurl3
       - libpango-1.0-0
       - libcairo2
       - libgdk-pixbuf2.0-0
       - libpangocairo-1.0-0
       - libgtk2.0-0
-      - libcurl3
       - libsdl2-2.0-0
       - libpulse0
       - xdotool
       - libglu1-mesa
       - dpkg
       - gnupg
+      - wget
     override-build: |
       snapcraftctl build
       echo "Grabbing Jagex Signing Key"
-      curl https://content.runescape.com/downloads/ubuntu/runescape.gpg.key -o $SNAPCRAFT_PART_INSTALL/jagex.gpg.key 
+      wget https://content.runescape.com/downloads/ubuntu/runescape.gpg.key -O $SNAPCRAFT_PART_INSTALL/jagex.gpg.key 
   osrs:
     plugin: dump
     source: osrs
     stage-packages:
+      - libnotify-bin
       - x11-utils
-      - curl
       - openjdk-8-jre
-      - p7zip-full
       - libpulse0
       - libglu1-mesa
+      - wget
     build-packages:
       - ca-certificates
       - ca-certificates-java
@@ -60,12 +100,12 @@ parts:
     plugin: dump
     source: runelite
     stage-packages:
+      - libnotify-bin
       - x11-utils
-      - curl
       - openjdk-8-jre
-      - p7zip-full
       - libglu1-mesa
       - libpulse0
+      - wget
     build-packages:
       - ca-certificates
       - ca-certificates-java
@@ -105,6 +145,8 @@ apps:
       - pulseaudio
       - x11
       - opengl
+    environment:
+      opts: --mode=OFF
   reset:
     command: reset-cache
   sources:

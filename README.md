@@ -40,5 +40,15 @@ Once installed, desktop icons should be available in your desktops standard star
 
 **rslauncher.reset**
 
-In the event environmental variables need to be passed to the game to modify it's behaviour in any capacity, users can place a bash script in the snaps directory. E.G, ~/snap/rslauncher/current/ 
-called *osrs-user-config* or *rs3-user-config* or *runelite-user-config* which will be automatically loaded prior to the game if present.
+In the event environmental variables need to be passed to the game to modify it's behaviour in any capacity, users can place a bash script in the snaps directory. E.G, ~/snap/rslauncher/current/ called 
+
+*osrs-user-config*
+ 
+*rs3-user-config*
+
+*runelite-user-config* 
+
+which will be automatically loaded prior to the game if present. This allows for adding environmental variables to the games without having to mess with any root owned files or desktop entries.
+Particularly, exports (such as Mesa debug environmental variables) and parameters for the game client (E.G, -mode=OFF for RuneLite) can be added, for example.
+
+**echo "opts=--mode=OFF" > ~/snap/rslauncher/current/runelite-user-config**

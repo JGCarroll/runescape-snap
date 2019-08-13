@@ -27,16 +27,14 @@ then
         source "$SNAP_USER_DATA/rs3-user-config" # User can add exports/vars$
         echo "Finished reading RS3 config"
 fi
+
 repoRoot="http://content.runescape.com/downloads/ubuntu/"
 repo="http://content.runescape.com/downloads/ubuntu/dists/trusty/"
 repoReleaseFile="Release"
 repoReleaseSignature="Release.gpg"
 
-networkError="Invalid response from Jagex whilst running first time setup. Is the network fully functional?"
-firstRunMessage="This snap is not endorsed by Jagex. For support, check out the Runescape Tech Forums, Reddit, or the Github repository!"
-
-
 function DownloadRS3(){
+	notify-send 'RuneScape snap' 'This client bundle is authored by Hmm and recieves no official support from Jagex.' --icon=dialog-information -t 10
 	# Does not overwrite any existing key in the event the public key is changed.
 	echo Importing Jagex Signing key
 	gpg --batch --import "$SNAP/jagex.gpg.key" 
@@ -44,17 +42,16 @@ function DownloadRS3(){
 	# Clear up previous runs
 	echo Clearing previous installers
 	rm -rf "$SNAP_USER_COMMON/runescape" "${SNAP_USER_COMMON:?}/usr" "$SNAP_USER_COMMON/repoRelease" "$SNAP_USER_COMMON/repoRelease.gpg" "$SNAP_USER_COMMON/packages" "$SNAP_USER_COMMON/rs.deb"
-	xmessage -timeout 120 "$firstRunMessage" &
 
 	echo "Downloading RuneScape repository info"
-	curl -s "$repo$repoReleaseFile" -o "$SNAP_USER_COMMON/repoRelease"
+	wget "$repo$repoReleaseFile" -O "$SNAP_USER_COMMON/repoRelease"
 
 	echo "Downloading RuneScape repository info signature"
-	curl -s "$repo$repoReleaseSignature" -o "$SNAP_USER_COMMON/repoRelease.gpg"
+	wget "$repo$repoReleaseSignature" -O "$SNAP_USER_COMMON/repoRelease.gpg"
 
 	if ! gpg --batch --verify "$SNAP_USER_COMMON/repoRelease.gpg" "$SNAP_USER_COMMON/repoRelease"
 	then
-		xmessage "$networkError"
+		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' --icon=dialog-information -t 10 
 		exit 1
 	fi
 	echo "Repository info looks valid!"
@@ -63,11 +60,11 @@ function DownloadRS3(){
 	packageFileHash=$(grep "SHA256" -A 10 "$SNAP_USER_COMMON/repoRelease" | grep amd64/Packages$ | cut -d " " -f 2)
 
 	echo "Downloading repository package list"
-	curl -s "$repo$packageFile" -o "$SNAP_USER_COMMON/packages"
+	wget "$repo$packageFile" -O "$SNAP_USER_COMMON/packages"
 
 	if [[ $packageFileHash != $(sha256sum "$SNAP_USER_COMMON/packages" | cut -d " " -f 1) ]]
 	then
-		xmessage "$networkError" 
+		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' --icon=dialog-information -t 10 
 		exit 1
 	fi
 	echo "Repository package list looks valid!"
@@ -76,11 +73,11 @@ function DownloadRS3(){
 	debHash=$(grep SHA256 "$SNAP_USER_COMMON/packages" | cut -d " " -f 2)
 
 	echo "Downloading RuneScape installer"
-	curl -s "$repoRoot$debFile" -o "$SNAP_USER_COMMON/rs.deb"
+	wget "$repoRoot$debFile" -O "$SNAP_USER_COMMON/rs.deb"
 
 	if [[ $debHash != $(sha256sum "$SNAP_USER_COMMON/rs.deb" | cut -d " " -f 1) ]]
 	then 
-		xmessage "$networkError"
+		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' --icon=dialog-information -t 10 
 		exit 1
 	fi
 	echo "Runescape installer looks valid!"
@@ -114,7 +111,7 @@ fi
 
 #Execute game
 echo "Launching RuneScape"
-"$SNAP_USER_COMMON"/runescape-launcher "$@" &
+"$SNAP_USER_COMMON"/runescape-launcher "$@" $opts &
 
 #Hide the loading screen, since the game doesn't do this automatically.
 windowsInitially=$(xdotool search --onlyvisible --class  "RuneScape" | wc -l)

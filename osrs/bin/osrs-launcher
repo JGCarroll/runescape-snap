@@ -21,6 +21,7 @@
 
 echo "Preparing sandbox environment..."
 uiScale=1
+
 source sandbox-configure
 if [[ -f "$SNAP_USER_DATA/osrs-user-config" ]]
 then
@@ -29,27 +30,15 @@ then
 	echo "Finished reading OSRS config"
 fi
 
-networkError="Invalid response from Jagex whilst running first time setup. Is the network fully functional?"
-firstRunMessage="This snap is not endorsed by Jagex. For support, check out the Runescape Tech Forums, Reddit, or the Github repository!"
-gameURL="http://www.runescape.com/downloads/OldSchool.dmg"
-
 DownloadOSRS(){
-	echo Clearing previous installers
-	rm "$SNAP_USER_COMMON/osrs.jar" "$SNAP_USER_COMMON/osrs" "$SNAP_USER_COMMON/OSRSPackage"
-	xmessage -timeout 120 "$firstRunMessage" &
+	notify-send 'RuneScape snap' 'This client bundle is authored by Hmm and recieves no official support from Jagex.' --icon=dialog-information -t 10
 	echo Downloading OSRS package
-	if ! curl -s "$gameURL" -o "$SNAP_USER_COMMON/OSRSPackage"
+	if ! wget "https://oldschool.runescape.com/downloads/jagexappletviewer.jar" -O "$SNAP_USER_COMMON/osrs.jar"
 	then 
-		xmessage "$networkError"
+		echo "Failed to get osrs.jar"
+		notify-send 'RuneScape snap' 'This client bundle is authored by Hmm and recieves no official support from Jagex.' --icon=dialog-information -t 10
 		exit 1
 	fi
-	echo "Extracting OSRS package"
-	"$SNAP"/usr/lib/p7zip/7z x "$SNAP_USER_COMMON/OSRSPackage" -o"$SNAP_USER_COMMON"/osrs/ >/dev/null
-	"$SNAP"/usr/lib/p7zip/7z x "$SNAP_USER_COMMON/osrs/4.hfs" -o"$SNAP_USER_COMMON"/osrs/ >/dev/null
-	mv "$SNAP_USER_COMMON/osrs/Old School RuneScape/Old School RuneScape.app/Contents/Java/jagexappletviewer.jar" "$SNAP_USER_COMMON/osrs.jar"
-    	chmod +x "$SNAP_USER_COMMON/osrs.jar"
-	echo "Clearing installers"
-	rm -rf "$SNAP_USER_COMMON/osrs" "$SNAP_USER_COMMON/OSRSPackage"
 }
 
 if [[ ! -f "$SNAP_USER_COMMON/osrs.jar" ]]
@@ -59,4 +48,4 @@ then
 fi
 
 echo "Launching OSRS"
-"$SNAP/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java" -Djava.class.path="$SNAP_USER_COMMON"/osrs.jar -Duser.home="$SNAP_USER_COMMON"/ -Dsun.java2d.uiScale=$uiScale -Dsun.java2d.nodraw=true -Dcom.jagex.config=http://oldschool.runescape.com/jav_config.ws -Djava.system.class.loader=app.systemclassloader -Xmx512m -Xss2m -XX:CompileThreshold=1500 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC jagexappletviewer "$SNAP_USER_COMMON" >/dev/null &
+"$SNAP/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java" -Djava.class.path="$SNAP_USER_COMMON"/osrs.jar -Duser.home="$SNAP_USER_COMMON"/ -Dsun.java2d.uiScale=$uiScale -Dsun.java2d.nodraw=true -Dcom.jagex.config=http://oldschool.runescape.com/jav_config.ws -Xmx512m -Xss2m -XX:CompileThreshold=1500 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC jagexappletviewer "$SNAP_USER_COMMON" $opts
