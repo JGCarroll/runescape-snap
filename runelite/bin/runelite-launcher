@@ -21,6 +21,14 @@
 
 echo "Preparing sandbox environment..."
 export _JAVA_OPTIONS=-Duser.home="$SNAP_USER_COMMON"
+
+#The RuneLite Launcher does not autupdate, and is not built into the snap directly.
+#As such, it needs to be triggered into downloading the fresh .jar by pushing a snap update
+#Doing this by hash seems like a logistical nightmare going forwards, consider just building RuneLite into the snap
+if [[ $(sha256sum $SNAP_USER_COMMON/runelite.jar | cut -d " " -f 1) == "1f8e54d902f06e7d16dc1c49f920a7c42971e8b7e8a558204edbd2304a02c92a" ]]; then
+	rm $SNAP_USER_COMMON/runelite.jar
+fi
+
 source sandbox-configure
 if [[ -f "$SNAP_USER_DATA/runelite-user-config" ]]
 then
@@ -55,4 +63,4 @@ then
 fi
 
 echo "Launching RuneLite"
-"$SNAP/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java" -jar "$SNAP_USER_COMMON/runelite.jar" "$opts" "$@"
+"$SNAP/usr/lib/jvm/java-11-openjdk-amd64/bin/java" -jar "$SNAP_USER_COMMON/runelite.jar" "$opts" "$@"

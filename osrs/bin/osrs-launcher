@@ -48,4 +48,4 @@ then
 fi
 
 echo "Launching OSRS"
-"$SNAP/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java" -Djava.class.path="$SNAP_USER_COMMON"/osrs.jar -Duser.home="$SNAP_USER_COMMON"/ -Dsun.java2d.uiScale=$uiScale -Dsun.java2d.nodraw=true -Dcom.jagex.config=http://oldschool.runescape.com/jav_config.ws -Xmx512m -Xss2m -XX:CompileThreshold=1500 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC jagexappletviewer "$SNAP_USER_COMMON" $opts
+"$SNAP/usr/lib/jvm/java-11-openjdk-amd64/bin/java" -Djava.class.path="$SNAP_USER_COMMON"/osrs.jar -Duser.home="$SNAP_USER_COMMON"/ -Dsun.java2d.uiScale=$uiScale -Dsun.java2d.nodraw=true -Dcom.jagex.config=http://oldschool.runescape.com/jav_config.ws -Xmx512m -Xss2m -XX:CompileThreshold=1500 -XX:+UseConcMarkSweepGC jagexappletviewer "$SNAP_USER_COMMON" $opts
