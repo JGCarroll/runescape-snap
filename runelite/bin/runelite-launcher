@@ -40,18 +40,9 @@ fi
 DownloadRuneLite(){
 	notify-send 'RuneScape snap' 'This client bundle is authored by Hmm and recieves no official support from Jagex. Furthermore, the RuneLite client is made by the community and is effectively experimental.' --icon=dialog-information -t 10
 	echo Downloading RuneLite
-	file=$(wget https://github.com/runelite/launcher/releases/latest -q -O-  | sed -n 's/.*href="\([^"]*\).*/\1/p' | grep .jar)
-	if [[ -z "$file" ]]
+	if ! wget "https://github.com/runelite/launcher/releases/download/2.0.0/RuneLite.jar" -O "$SNAP_USER_COMMON/runelite.jar"
 	then
 		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' --icon=dialog-information -t 10
-		echo "Unable to parse Github"
-		exit 1
-	fi
-	if ! wget https://github.com"$file" -O "$SNAP_USER_COMMON/runelite.jar"
-	then
-		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' --icon=dialog-information -t 10
-		echo "Unexpected response from github"
-		echo "file = $file"
 		exit 1
 	fi
 }
