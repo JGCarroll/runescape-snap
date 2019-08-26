@@ -30,11 +30,9 @@ fi
 
 repoRoot="http://content.runescape.com/downloads/ubuntu/"
 repo="http://content.runescape.com/downloads/ubuntu/dists/trusty/"
-repoReleaseFile="Release"
-repoReleaseSignature="Release.gpg"
 
 function DownloadRS3(){
-	notify-send 'RuneScape snap' 'This client bundle is authored by Hmm and recieves no official support from Jagex.' --icon=dialog-information -t 10
+	notify-send 'RuneScape snap' 'This client bundle is authored by Hmm and recieves no official support from Jagex.' -t 10
 	# Does not overwrite any existing key in the event the public key is changed.
 	echo Importing Jagex Signing key
 	gpg --batch --import "$SNAP/jagex.gpg.key" 
@@ -44,14 +42,14 @@ function DownloadRS3(){
 	rm -rf "$SNAP_USER_COMMON/runescape" "${SNAP_USER_COMMON:?}/usr" "$SNAP_USER_COMMON/repoRelease" "$SNAP_USER_COMMON/repoRelease.gpg" "$SNAP_USER_COMMON/packages" "$SNAP_USER_COMMON/rs.deb"
 
 	echo "Downloading RuneScape repository info"
-	wget "$repo$repoReleaseFile" -O "$SNAP_USER_COMMON/repoRelease"
+	wget "$repo"Release -O "$SNAP_USER_COMMON/repoRelease"
 
 	echo "Downloading RuneScape repository info signature"
-	wget "$repo$repoReleaseSignature" -O "$SNAP_USER_COMMON/repoRelease.gpg"
+	wget "$repo"Release.gpg -O "$SNAP_USER_COMMON/repoRelease.gpg"
 
 	if ! gpg --batch --verify "$SNAP_USER_COMMON/repoRelease.gpg" "$SNAP_USER_COMMON/repoRelease"
 	then
-		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' --icon=dialog-information -t 10 
+		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' -t 10 
 		exit 1
 	fi
 	echo "Repository info looks valid!"
@@ -64,7 +62,7 @@ function DownloadRS3(){
 
 	if [[ $packageFileHash != $(sha256sum "$SNAP_USER_COMMON/packages" | cut -d " " -f 1) ]]
 	then
-		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' --icon=dialog-information -t 10 
+		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' -t 10 
 		exit 1
 	fi
 	echo "Repository package list looks valid!"
@@ -77,7 +75,7 @@ function DownloadRS3(){
 
 	if [[ $debHash != $(sha256sum "$SNAP_USER_COMMON/rs.deb" | cut -d " " -f 1) ]]
 	then 
-		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' --icon=dialog-information -t 10 
+		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' -t 10 
 		exit 1
 	fi
 	echo "Runescape installer looks valid!"
@@ -111,7 +109,7 @@ fi
 
 #Execute game
 echo "Launching RuneScape"
-"$SNAP_USER_COMMON"/runescape-launcher "$@" $opts &
+"$SNAP_USER_COMMON"/runescape-launcher "$@" "$runesnap_game_options" &
 
 #Hide the loading screen, since the game doesn't do this automatically.
 windowsInitially=$(xdotool search --onlyvisible --class  "RuneScape" | wc -l)

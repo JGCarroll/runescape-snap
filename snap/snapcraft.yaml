@@ -146,7 +146,7 @@ apps:
       - x11
       - opengl
     environment:
-      opts: --mode=OFF
+      runesnap_game_options: --mode=OFF
   reset:
     command: reset-cache
   sources:
