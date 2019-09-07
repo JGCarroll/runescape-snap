@@ -125,6 +125,9 @@ apps:
       - opengl
     environment:
       PULSE_LATENCY_MSEC: 100
+      PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3' media.role='game'
+      SDL_VIDEO_X11_WMCLASS: RuneScape
+      MESA_GL_VERSION_OVERRIDE: 3.0
   osrs:
     command: osrs-launcher
     desktop: usr/share/applications/osrs.desktop

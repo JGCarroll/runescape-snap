@@ -28,6 +28,8 @@ then
         echo "Finished reading RS3 config"
 fi
 
+unset XMODIFIERS
+
 repoRoot="http://content.runescape.com/downloads/ubuntu/"
 repo="http://content.runescape.com/downloads/ubuntu/dists/trusty/"
 
@@ -109,7 +111,11 @@ fi
 
 #Execute game
 echo "Launching RuneScape"
-"$SNAP_USER_COMMON"/runescape-launcher "$@" "$runesnap_game_options" &
+if [[ -z $@ ]]; then
+	$SNAP_USER_COMMON/runescape --configURI  http://www.runescape.com/k=5/l=\$\(Language:0\)/jav_config.ws &
+else
+	$SNAP_USER_COMMON/runescape --configURI "$@" &
+fi
 
 #Hide the loading screen, since the game doesn't do this automatically.
 windowsInitially=$(xdotool search --onlyvisible --class  "RuneScape" | wc -l)
