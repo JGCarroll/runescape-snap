@@ -124,7 +124,7 @@ apps:
       - x11
       - opengl
     environment:
-      PULSE_LATENCY_MSEC: 100
+      PULSE_LATENCY_MSEC: 80
       PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3' media.role='game'
       SDL_VIDEO_X11_WMCLASS: RuneScape
       MESA_GL_VERSION_OVERRIDE: 3.0
