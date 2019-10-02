@@ -7,6 +7,7 @@ description: |
   Explore the fantasy world of Gielinor in the worlds most popular free to play MMORPG!
   This snap provides both Old School RuneScape (Upstream and RuneLite) and RuneScape 3 (NXT)!
   This is an unofficial package provided by Hmm.
+
 type: app
 grade: stable
 confinement: strict
@@ -14,8 +15,12 @@ license: MIT
 architectures:
   - build-on: amd64
     run-on: amd64
+    
 environment:
   DISABLE_WAYLAND: 1
+
+
+
 parts:
   rs3-gpg:
     plugin: dump
@@ -30,6 +35,7 @@ parts:
       - lib/libGLEW.so
       - lib/libGLEWmx.so
       - lib/libGLEWmx.so.1.10.0
+    
     build-packages:
       - make
       - g++
@@ -39,6 +45,7 @@ parts:
       - libxmu-headers
       - libxi-dev
       - quilt
+    
     override-pull: |
       snapcraftctl pull
       cd $SNAPCRAFT_PART_SRC
@@ -47,9 +54,12 @@ parts:
       rm patches.tar.xz
       export QUILT_PATCHES=debian/patches
       quilt push -a
+    
     override-build: |
       snapcraftctl build
       ln $SNAPCRAFT_PART_INSTALL/lib/libGLEW.so.1.10.0 $SNAPCRAFT_PART_INSTALL/lib/libGLEW.so.1.10 
+  
+  
   libpng12:
     plugin: cmake
     source: http://archive.ubuntu.com/ubuntu/pool/main/libp/libpng/libpng_1.2.54.orig.tar.xz    
@@ -57,6 +67,7 @@ parts:
       - gcc
       - zlib1g-dev
       - quilt
+    
     override-pull: |
       snapcraftctl pull
       cd $SNAPCRAFT_PART_SRC
@@ -65,6 +76,8 @@ parts:
       rm $SNAPCRAFT_PART_SRC/patches.tar.xz 
       export QUILT_PATCHES=debian/patches
       quilt push -a
+  
+  
   rs3:
     plugin: dump
     source: rs3/
@@ -84,6 +97,8 @@ parts:
       - dpkg
       - gnupg
       - wget
+  
+  
   osrs:
     plugin: dump
     source: osrs
@@ -94,9 +109,12 @@ parts:
       - libpulse0
       - libglu1-mesa
       - wget
+    
     build-packages:
       - ca-certificates
       - ca-certificates-java
+  
+  
   runelite:
     plugin: dump
     source: runelite
@@ -107,12 +125,18 @@ parts:
       - libglu1-mesa
       - libpulse0
       - wget
+    
     build-packages:
       - ca-certificates
       - ca-certificates-java
+  
+  
   utils:
     plugin: dump
     source: utils/
+
+
+
 apps:
   rs3:
     command: rs3-launcher
@@ -125,11 +149,14 @@ apps:
       - audio-playback
       - x11
       - opengl
+
     environment:
       PULSE_LATENCY_MSEC: 80
       PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3' media.role='game'
       SDL_VIDEO_X11_WMCLASS: RuneScape
       MESA_GL_VERSION_OVERRIDE: 3.0
+
+
   osrs:
     command: osrs-launcher
     desktop: usr/share/applications/osrs.desktop
@@ -141,6 +168,8 @@ apps:
       - audio-playback
       - x11
       - opengl
+
+
   runelite:
     command: runelite-launcher
     desktop: usr/share/applications/runelite.desktop
@@ -152,9 +181,13 @@ apps:
       - audio-playback
       - x11
       - opengl
+
+
     environment:
       runesnap_game_options: --mode=OFF
+
   reset:
     command: reset-cache
+
   sources:
     command: list-sources
