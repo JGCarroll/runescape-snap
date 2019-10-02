@@ -121,6 +121,7 @@ apps:
       - desktop-legacy
       - network
       - pulseaudio
+      - audio-playback
       - x11
       - opengl
     environment:
@@ -136,6 +137,7 @@ apps:
       - desktop-legacy
       - network
       - pulseaudio
+      - audio-playback
       - x11
       - opengl
   runelite:
@@ -146,6 +148,7 @@ apps:
       - desktop-legacy
       - network
       - pulseaudio
+      - audio-playback
       - x11
       - opengl
     environment:
