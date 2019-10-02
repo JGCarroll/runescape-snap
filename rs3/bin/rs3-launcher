@@ -37,7 +37,7 @@ function DownloadRS3(){
 	notify-send 'RuneScape snap' 'This client bundle is authored by Hmm and recieves no official support from Jagex.' -t 10
 	# Does not overwrite any existing key in the event the public key is changed.
 	echo Importing Jagex Signing key
-	gpg --batch --import "$SNAP/jagex.gpg.key" 
+	gpg --batch --import "$SNAP/runescape.gpg.key" 
 
 	# Clear up previous runs
 	echo Clearing previous installers

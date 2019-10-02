@@ -17,6 +17,11 @@ architectures:
 environment:
   DISABLE_WAYLAND: 1
 parts:
+  rs3-gpg:
+    plugin: dump
+    source: https://content.runescape.com/downloads/ubuntu/runescape.gpg.key
+    source-checksum: sha256/2E32BC0110D349A1613878A681DC7748F83FB8766B11911C71A923C101382843
+
   glew1-10:
     plugin: make
     source: https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/glew/1.10.0-3/glew_1.10.0.orig.tar.gz
@@ -79,10 +84,6 @@ parts:
       - dpkg
       - gnupg
       - wget
-    override-build: |
-      snapcraftctl build
-      echo "Grabbing Jagex Signing Key"
-      wget https://content.runescape.com/downloads/ubuntu/runescape.gpg.key -O $SNAPCRAFT_PART_INSTALL/jagex.gpg.key 
   osrs:
     plugin: dump
     source: osrs
