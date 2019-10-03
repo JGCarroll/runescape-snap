@@ -68,6 +68,12 @@ parts:
       - gcc
       - zlib1g-dev
       - quilt
+
+    configflags:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DSKIP_INSTALL_HEADERS:bool=true
+      - -DSKIP_INSTALL_EXECUTABLES:bool=true
+      - -DSKIP_INSTALL_FILES:bool=true
     
     override-pull: |
       snapcraftctl pull
