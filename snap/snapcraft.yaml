@@ -24,8 +24,9 @@ environment:
 parts:
   rs3-gpg:
     plugin: dump
-    source: https://content.runescape.com/downloads/ubuntu/runescape.gpg.key
-    source-checksum: sha256/2E32BC0110D349A1613878A681DC7748F83FB8766B11911C71A923C101382843
+    source: .
+    override-pull: 
+      wget https://content.runescape.com/downloads/ubuntu/runescape.gpg.key
 
   glew1-10:
     plugin: make
