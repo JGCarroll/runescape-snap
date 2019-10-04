@@ -116,7 +116,8 @@ parts:
       - libpulse0
       - libglu1-mesa
       - wget
-    
+      - libasound2
+      - libasound2-plugins
     build-packages:
       - ca-certificates
       - ca-certificates-java
@@ -132,7 +133,8 @@ parts:
       - libglu1-mesa
       - libpulse0
       - wget
-    
+      - libasound2
+      - libasound2-plugins    
     build-packages:
       - ca-certificates
       - ca-certificates-java
@@ -142,7 +144,9 @@ parts:
     plugin: dump
     source: utils/
 
-
+layout:
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
+    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
 
 apps:
   rs3:
@@ -189,9 +193,9 @@ apps:
       - x11
       - opengl
 
-
     environment:
       runesnap_game_options: --mode=OFF
+
 
   reset:
     command: reset-cache
