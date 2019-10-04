@@ -1,3 +1,4 @@
+#!/bin/bash
 #Copyright (c) 2017 Canonical 
 #Permission is hereby granted, free of charge, to any person obtaining a copy
 #of this software and associated documentation files (the "Software"), to deal
@@ -323,14 +324,8 @@ if [[ -n "$XDG_RUNTIME_DIR" && -z "$DISABLE_WAYLAND" ]]; then
     fi
 fi
 
-export ALSA_CONFIG_PATH="\$SNAP/etc/asound.conf"
-
-if [ -d "\$SNAP/usr/lib/alsa-lib" ]; then
-	append_dir LD_LIBRARY_PATH "\$SNAP/usr/lib/alsa-lib"
-elif [ -d "\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib" ]; then
-	append_dir LD_LIBRARY_PATH "\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib"
-fi
-append_dir LD_LIBRARY_PATH "\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio"
+#Redirect ALSA to Pulseaudio
+export ALSA_CONFIG_PATH="$SNAP/etc/asound.conf"
 
 # Make PulseAudio socket available inside the snap-specific $XDG_RUNTIME_DIR
 if [ -n "$XDG_RUNTIME_DIR" ]; then
@@ -340,6 +335,7 @@ if [ -n "$XDG_RUNTIME_DIR" ]; then
         export PULSE_SERVER="unix:${pulseaudio_sockpath}"
     fi
 fi
+
 
 
 
