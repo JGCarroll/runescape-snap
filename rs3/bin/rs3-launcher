@@ -24,7 +24,7 @@ source sandbox-configure
 if [[ -f "$SNAP_USER_DATA/rs3-user-config" ]]
 then
         echo "Found RS3 config"
-        source "$SNAP_USER_DATA/rs3-user-config" # User can add exports/vars$
+        source "$SNAP_USER_DATA/rs3-user-config" # User can add exports/vars
         echo "Finished reading RS3 config"
 fi
 
@@ -84,10 +84,7 @@ function DownloadRS3(){
 
 	#Extract the files and put them into the right place
 	dpkg-deb -x "$SNAP_USER_COMMON/rs.deb" "$SNAP_USER_COMMON/"
-	mv "$SNAP_USER_COMMON/usr/bin/runescape-launcher" "$SNAP_USER_COMMON/runescape-launcher"
-	chmod +x "$SNAP_USER_COMMON/runescape-launcher"
 	mv "$SNAP_USER_COMMON/usr/share/games/runescape-launcher/runescape" "$SNAP_USER_COMMON/runescape"
-	sed -i s?/usr/share/games/runescape-launcher/?"$SNAP_USER_COMMON"/?g "$SNAP_USER_COMMON/runescape-launcher"
 
 	echo "Clearing up downloads"
 	rm -rf "${SNAP_USER_COMMON:?}/usr" "$SNAP_USER_COMMON/repoRelease" "$SNAP_USER_COMMON/repoRelease.gpg" "$SNAP_USER_COMMON/packages" "$SNAP_USER_COMMON/rs.deb"
@@ -102,7 +99,7 @@ function SetupDirs(){
 	echo user_folder="$SNAP_USER_COMMON"/rs3cache/ >> "$SNAP_USER_DATA/Jagex/launcher/preferences.cfg"
 }
 
-if [[ ! -f "$SNAP_USER_COMMON/runescape-launcher" ]]
+if [[ ! -f "$SNAP_USER_COMMON/runescape" ]]
 then
 	echo "Launcher doesn't appear to exist, running setup!" 
 	DownloadRS3
