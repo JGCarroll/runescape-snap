@@ -1,7 +1,7 @@
 name: rslauncher
 base: core18
 title: RuneScape
-version: '1'
+version: git
 summary: RuneScape, the free MMORPG by Jagex LTD
 description: |
   Explore the fantasy world of Gielinor in the worlds most popular free to play MMORPG!
@@ -15,11 +15,6 @@ license: MIT
 architectures:
   - build-on: amd64
     run-on: amd64
-    
-environment:
-  DISABLE_WAYLAND: 1
-
-
 
 parts:
   rs3-gpg:
@@ -28,62 +23,6 @@ parts:
     override-pull: 
       wget https://content.runescape.com/downloads/ubuntu/runescape.gpg.key
 
-  glew1-10:
-    plugin: make
-    source: https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/glew/1.10.0-3/glew_1.10.0.orig.tar.gz
-    artifacts: 
-      - lib/libGLEW.so.1.10.0
-      - lib/libGLEW.so
-      - lib/libGLEWmx.so
-      - lib/libGLEWmx.so.1.10.0
-    
-    build-packages:
-      - make
-      - g++
-      - libx11-dev
-      - libgl1-mesa-dev
-      - libxmu-dev
-      - libxmu-headers
-      - libxi-dev
-      - quilt
-    
-    override-pull: |
-      snapcraftctl pull
-      cd $SNAPCRAFT_PART_SRC
-      wget https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/glew/1.10.0-3/glew_1.10.0-3.debian.tar.gz -O patches.tar.xz
-      tar xf patches.tar.xz
-      rm patches.tar.xz
-      export QUILT_PATCHES=debian/patches
-      quilt push -a
-    
-    override-build: |
-      snapcraftctl build
-      ln $SNAPCRAFT_PART_INSTALL/lib/libGLEW.so.1.10.0 $SNAPCRAFT_PART_INSTALL/lib/libGLEW.so.1.10 
-  
-  
-  libpng12:
-    plugin: cmake
-    source: http://archive.ubuntu.com/ubuntu/pool/main/libp/libpng/libpng_1.2.54.orig.tar.xz    
-    build-packages:
-      - gcc
-      - zlib1g-dev
-      - quilt
-
-    configflags:
-      - -DCMAKE_BUILD_TYPE=Release
-      - -DSKIP_INSTALL_HEADERS:bool=true
-      - -DSKIP_INSTALL_EXECUTABLES:bool=true
-      - -DSKIP_INSTALL_FILES:bool=true
-    
-    override-pull: |
-      snapcraftctl pull
-      cd $SNAPCRAFT_PART_SRC
-      wget http://archive.ubuntu.com/ubuntu/pool/main/libp/libpng/libpng_1.2.54-1ubuntu1.1.debian.tar.xz -O patches.tar.xz
-      tar xf $SNAPCRAFT_PART_SRC/patches.tar.xz -C $SNAPCRAFT_PART_SRC
-      rm $SNAPCRAFT_PART_SRC/patches.tar.xz 
-      export QUILT_PATCHES=debian/patches
-      quilt push -a
-  
   
   rs3:
     plugin: dump
@@ -105,7 +44,7 @@ parts:
       - gnupg
       - wget
   
-  
+
   osrs:
     plugin: dump
     source: osrs
@@ -147,10 +86,14 @@ parts:
 layout:
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
     bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.0:
+    bind: $SNAP/gnome-platform/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.0
+  /usr/share/xml/iso-codes:
+    bind: $SNAP/gnome-platform/usr/share/xml/iso-codes
 
 apps:
   rs3:
-    command: rs3-launcher
+    command: bin/rs3-launcher
     desktop: usr/share/applications/rs3.desktop
     plugs:
       - desktop
@@ -159,16 +102,14 @@ apps:
       - audio-playback
       - x11
       - opengl
-
     environment:
       PULSE_LATENCY_MSEC: 80
       PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3' media.role='game'
       SDL_VIDEO_X11_WMCLASS: RuneScape
-      MESA_GL_VERSION_OVERRIDE: 3.0
 
 
   osrs:
-    command: osrs-launcher
+    command: bin/osrs-launcher
     desktop: usr/share/applications/osrs.desktop
     plugs:
       - desktop
@@ -177,10 +118,13 @@ apps:
       - audio-playback
       - x11
       - opengl
+    
+    environment:
+      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_COMMON"
 
 
   runelite:
-    command: runelite-launcher
+    command: bin/runelite-launcher
     desktop: usr/share/applications/runelite.desktop
     plugs:
       - desktop
@@ -189,9 +133,10 @@ apps:
       - audio-playback
       - x11
       - opengl
-
+      - gsettings
+      - home
     environment:
-      runesnap_game_options: --mode=OFF
+      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_COMMON"
 
 
   reset:

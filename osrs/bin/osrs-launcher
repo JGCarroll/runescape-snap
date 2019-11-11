@@ -19,16 +19,8 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
-echo "Preparing sandbox environment..."
-uiScale=1
-
 source sandbox-configure
-if [[ -f "$SNAP_USER_DATA/osrs-user-config" ]]
-then
-	echo "Found OSRS config"
-	source "$SNAP_USER_DATA/osrs-user-config" # User can add exports/vars to this file if required, as program itself is read only.
-	echo "Finished reading OSRS config"
-fi
+server=http://oldschool.runescape.com/jav_config.ws
 
 DownloadOSRS(){
 	notify-send 'RuneScape snap' 'This client bundle is authored by Hmm and recieves no official support from Jagex.' -t 10
@@ -36,10 +28,18 @@ DownloadOSRS(){
 	if ! wget "https://oldschool.runescape.com/downloads/jagexappletviewer.jar" -O "$SNAP_USER_COMMON/osrs.jar"
 	then 
 		echo "Failed to get osrs.jar"
-		notify-send 'RuneScape snap' 'This client bundle is authored by Hmm and recieves no official support from Jagex.' -t 10
+		notify-send 'Network error' 'Unable to connect to Jagex for first time setup!' -t 10
 		exit 1
 	fi
 }
+
+if [[ -f "$SNAP_USER_DATA/osrs-user-config" ]]
+then
+	echo "Found OSRS config"
+	source "$SNAP_USER_DATA/osrs-user-config" # User can add exports/vars to this file if required, as program itself is read only.
+	echo "Finished reading OSRS config"
+fi
+
 
 if [[ ! -f "$SNAP_USER_COMMON/osrs.jar" ]]
 then
@@ -48,4 +48,4 @@ then
 fi
 
 echo "Launching OSRS"
-"$SNAP/usr/lib/jvm/java-11-openjdk-amd64/bin/java" -Djava.class.path="$SNAP_USER_COMMON"/osrs.jar -Duser.home="$SNAP_USER_COMMON"/ -Dsun.java2d.uiScale=$uiScale -Dsun.java2d.nodraw=true -Dcom.jagex.config=http://oldschool.runescape.com/jav_config.ws -Xmx512m -Xss2m -XX:CompileThreshold=1500 -XX:+UseConcMarkSweepGC jagexappletviewer "$SNAP_USER_COMMON" "$runesnap_game_options"
+"$SNAP/usr/lib/jvm/java-11-openjdk-amd64/bin/java" -Djava.class.path="$SNAP_USER_COMMON"/osrs.jar -Dsun.java2d.nodraw=true -Dcom.jagex.config=$server -Xmx512m -Xss2m -XX:CompileThreshold=1500 -XX:+UseConcMarkSweepGC jagexappletviewer "$SNAP_USER_COMMON"

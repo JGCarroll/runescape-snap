@@ -19,8 +19,16 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
-echo "Preparing sandbox environment..."
-export _JAVA_OPTIONS=-Duser.home="$SNAP_USER_COMMON"
+source sandbox-configure
+
+DownloadRuneLite(){
+	echo Downloading RuneLite
+	if ! wget "https://github.com/runelite/launcher/releases/download/2.0.0/RuneLite.jar" -O "$SNAP_USER_COMMON/runelite.jar"
+	then
+		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' -t 10
+		exit 1
+	fi
+}
 
 #The RuneLite Launcher does not autupdate, and is not built into the snap directly.
 #As such, it needs to be triggered into downloading the fresh .jar by pushing a snap update
@@ -31,8 +39,6 @@ if [[ -f $SNAP_USER_COMMON/runelite.jar ]]; then
 	fi
 fi
 
-source sandbox-configure
-
 if [[ -f "$SNAP_USER_DATA/runelite-user-config" ]]
 then
         echo "Found RuneLite config"
@@ -40,15 +46,6 @@ then
         echo "Finished reading RuneLite config"
 fi
 
-DownloadRuneLite(){
-	notify-send 'RuneScape snap' 'This client bundle is authored by Hmm and recieves no official support from Jagex. Furthermore, the RuneLite client is made by the community and is effectively experimental.' --icon=dialog-information -t 10
-	echo Downloading RuneLite
-	if ! wget "https://github.com/runelite/launcher/releases/download/2.0.0/RuneLite.jar" -O "$SNAP_USER_COMMON/runelite.jar"
-	then
-		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' -t 10
-		exit 1
-	fi
-}
 
 if [[ ! -f "$SNAP_USER_COMMON/runelite.jar" ]]
 then
@@ -56,5 +53,6 @@ then
 	DownloadRuneLite
 fi
 
+
 echo "Launching RuneLite"
-"$SNAP/usr/lib/jvm/java-11-openjdk-amd64/bin/java" -jar "$SNAP_USER_COMMON/runelite.jar" "$runesnap_game_options" "$@"
+"$SNAP/usr/lib/jvm/java-11-openjdk-amd64/bin/java" -jar "$SNAP_USER_COMMON/runelite.jar" "$@"

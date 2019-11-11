@@ -19,22 +19,14 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
-echo "Preparing sandbox environment..."
 source sandbox-configure
-if [[ -f "$SNAP_USER_DATA/rs3-user-config" ]]
-then
-        echo "Found RS3 config"
-        source "$SNAP_USER_DATA/rs3-user-config" # User can add exports/vars
-        echo "Finished reading RS3 config"
-fi
-
-unset XMODIFIERS
-
-repoRoot="http://content.runescape.com/downloads/ubuntu/"
-repo="http://content.runescape.com/downloads/ubuntu/dists/trusty/"
+server=http://www.runescape.com/k=5/l=\$\(Language:0\)/jav_config.ws
+latestLauncher=launcher111119
 
 function DownloadRS3(){
-	notify-send 'RuneScape snap' 'This client bundle is authored by Hmm and recieves no official support from Jagex.' -t 10
+	repoRoot="http://content.runescape.com/downloads/ubuntu/"
+	repo="http://content.runescape.com/downloads/ubuntu/dists/trusty/"
+
 	# Does not overwrite any existing key in the event the public key is changed.
 	echo Importing Jagex Signing key
 	gpg --batch --import "$SNAP/runescape.gpg.key" 
@@ -84,7 +76,7 @@ function DownloadRS3(){
 
 	#Extract the files and put them into the right place
 	dpkg-deb -x "$SNAP_USER_COMMON/rs.deb" "$SNAP_USER_COMMON/"
-	mv "$SNAP_USER_COMMON/usr/share/games/runescape-launcher/runescape" "$SNAP_USER_COMMON/runescape"
+	mv "$SNAP_USER_COMMON/usr/share/games/runescape-launcher/runescape" "$SNAP_USER_COMMON/$latestLauncher"
 
 	echo "Clearing up downloads"
 	rm -rf "${SNAP_USER_COMMON:?}/usr" "$SNAP_USER_COMMON/repoRelease" "$SNAP_USER_COMMON/repoRelease.gpg" "$SNAP_USER_COMMON/packages" "$SNAP_USER_COMMON/rs.deb"
@@ -99,7 +91,16 @@ function SetupDirs(){
 	echo user_folder="$SNAP_USER_COMMON"/rs3cache/ >> "$SNAP_USER_DATA/Jagex/launcher/preferences.cfg"
 }
 
-if [[ ! -f "$SNAP_USER_COMMON/runescape" ]]
+if [[ -f "$SNAP_USER_DATA/rs3-user-config" ]]
+then
+        echo "Found RS3 config"
+        source "$SNAP_USER_DATA/rs3-user-config" # User can add exports/vars
+        echo "Finished reading RS3 config"
+fi
+
+unset XMODIFIERS
+
+if [[ ! -f "$SNAP_USER_COMMON/$latestLauncher" ]]
 then
 	echo "Launcher doesn't appear to exist, running setup!" 
 	DownloadRS3
@@ -109,30 +110,7 @@ fi
 #Execute game
 echo "Launching RuneScape"
 if [[ -z $@ ]]; then
-	$SNAP_USER_COMMON/runescape --configURI  http://www.runescape.com/k=5/l=\$\(Language:0\)/jav_config.ws &
+	$SNAP_USER_COMMON/$latestLauncher --configURI  $server
 else
-	$SNAP_USER_COMMON/runescape --configURI "$@" &
+	$SNAP_USER_COMMON/$latestLauncher --configURI "$@"
 fi
-
-#Hide the loading screen, since the game doesn't do this automatically.
-windowsInitially=$(xdotool search --onlyvisible --class  "RuneScape" | wc -l)
-windowsNeeded=$(( windowsInitially + 2)) # When this many windows are open, clear all none game windows.
-breakTime=$(( $(date +%s) + 60 )) # Used to escape infinite loop in event of unexpected client behaviour.
-
-until [[ $(xdotool search --onlyvisible --class "RuneScape" | wc -l) -eq $windowsNeeded ]]; do
-	sleep 2
-	if [[ $(date +%s) -gt $breakTime ]]
-	then
-		echo "Error: Exiting launcher due to game loading timeout"
-		exit 1
-	fi
-done
-echo "Hiding launcher window"
-sleep 2 #Prevent race condition!
-for XWindowID in $(xdotool search --class "RuneScape"); do
-        output=$(xprop -id "$XWindowID")
-        if [[ ! $output  == *"COMPOSITOR"*  ]]
-	then
-		xdotool windowunmap "$XWindowID" # Remove all RuneScape windows that aren't bypassing the compositor, suggesting they aren't using the GPU and hence aren't the game window.
-	fi
-done
