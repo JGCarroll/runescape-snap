@@ -28,7 +28,6 @@ parts:
     plugin: dump
     source: rs3/
     stage-packages:
-      - libnotify-bin
       - x11-utils
       - libcurl3
       - libpango-1.0-0
@@ -38,7 +37,6 @@ parts:
       - libgtk2.0-0
       - libsdl2-2.0-0
       - libpulse0
-      - xdotool
       - libglu1-mesa
       - dpkg
       - gnupg
@@ -86,10 +84,6 @@ parts:
 layout:
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
     bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
-  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.0:
-    bind: $SNAP/gnome-platform/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.0
-  /usr/share/xml/iso-codes:
-    bind: $SNAP/gnome-platform/usr/share/xml/iso-codes
 
 apps:
   rs3:
@@ -103,7 +97,7 @@ apps:
       - x11
       - opengl
     environment:
-      PULSE_LATENCY_MSEC: 80
+      PULSE_LATENCY_MSEC: 100
       PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3' media.role='game'
       SDL_VIDEO_X11_WMCLASS: RuneScape
 
