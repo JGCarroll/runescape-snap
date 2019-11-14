@@ -107,6 +107,12 @@ then
 	SetupDirs
 fi
 
+if [[ ! -f $SNAP_USER_COMMON/.R21_Notification_RS3 ]]
+then
+	echo -e "rslauncher is now running rs3 with an experimental fix for choppy audio! \nIf it improves or worsens your audio experience, please leave some feedback on the forums! \nVisit the Tech Support subsection of the RS forums and leave a post there \nThis message will only nag you once :) \n -Hmm" | xmessage -file - -title "rslauncher update notification" &
+	touch $SNAP_USER_COMMON/.R21_Notification_RS3
+fi
+
 #Execute game
 echo "Launching RuneScape"
 if [[ -z $@ ]]; then

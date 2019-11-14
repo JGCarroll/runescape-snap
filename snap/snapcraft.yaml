@@ -97,7 +97,7 @@ apps:
       - x11
       - opengl
     environment:
-      PULSE_LATENCY_MSEC: 100
+      SDL_AUDIODRIVER: alsa
       PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3' media.role='game'
       SDL_VIDEO_X11_WMCLASS: RuneScape
 
@@ -127,7 +127,6 @@ apps:
       - audio-playback
       - x11
       - opengl
-      - gsettings
     environment:
       _JAVA_OPTIONS: -Duser.home="$SNAP_USER_COMMON"
 
