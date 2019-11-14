@@ -5,7 +5,7 @@ version: git
 summary: RuneScape, the free MMORPG by Jagex LTD
 description: |
   Explore the fantasy world of Gielinor in the worlds most popular free to play MMORPG!
-  This snap provides both Old School RuneScape (Upstream and RuneLite) and RuneScape 3 (NXT)!
+  This snap provides both Old School RuneScape and RuneScape 3!
   This is an unofficial package provided by Hmm.
 
 type: app
@@ -63,20 +63,7 @@ parts:
   runelite:
     plugin: dump
     source: runelite
-    stage-packages:
-      - libnotify-bin
-      - x11-utils
-      - default-jre
-      - libglu1-mesa
-      - libpulse0
-      - wget
-      - libasound2
-      - libasound2-plugins    
-    build-packages:
-      - ca-certificates
-      - ca-certificates-java
-  
-  
+
   utils:
     plugin: dump
     source: utils/
@@ -122,13 +109,7 @@ apps:
     desktop: usr/share/applications/runelite.desktop
     plugs:
       - desktop
-      - desktop-legacy
-      - network
-      - audio-playback
       - x11
-      - opengl
-    environment:
-      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_COMMON"
 
 
   reset:

@@ -19,40 +19,12 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
+#RuneLite has been removed from this snap since it now has it's own official release!
+#sudo snap install runelite
+#This file will be removed in a future release
+
+
 source sandbox-configure
 
-DownloadRuneLite(){
-	echo Downloading RuneLite
-	if ! wget "https://github.com/runelite/launcher/releases/download/2.0.0/RuneLite.jar" -O "$SNAP_USER_COMMON/runelite.jar"
-	then
-		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' -t 10
-		exit 1
-	fi
-}
+echo -e "Hey! After working with the RuneLite devs, RuneLite now has it's own snap! \nThis snap will continue to provide the Vanilla experience for both games \nYou can install RuneLite with \nsudo snap install runelite \nOr by checking it out at snapcraft.io/runelite" | xmessage -file - -title "RuneLite has moved!" 
 
-#The RuneLite Launcher does not autupdate, and is not built into the snap directly.
-#As such, it needs to be triggered into downloading the fresh .jar by pushing a snap update
-if [[ -f $SNAP_USER_COMMON/runelite.jar ]]; then
-	if [[ $(sha256sum $SNAP_USER_COMMON/runelite.jar | cut -d " " -f 1) != "7c6790f3490fbf318682265e98bdb7d0f554faf3af7afb5cb97bbe37c8431d60" ]]; then
-		rm $SNAP_USER_COMMON/runelite.jar
-		echo "Clearing older RuneLite.jar"
-	fi
-fi
-
-if [[ -f "$SNAP_USER_DATA/runelite-user-config" ]]
-then
-        echo "Found RuneLite config"
-        source "$SNAP_USER_DATA/runelite-user-config" # User can add exports/vars$
-        echo "Finished reading RuneLite config"
-fi
-
-
-if [[ ! -f "$SNAP_USER_COMMON/runelite.jar" ]]
-then
-	echo "Launcher doesn't appear to exist, running setup!"
-	DownloadRuneLite
-fi
-
-
-echo "Launching RuneLite"
-"$SNAP/usr/lib/jvm/java-11-openjdk-amd64/bin/java" -jar "$SNAP_USER_COMMON/runelite.jar" "$@"
