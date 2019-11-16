@@ -59,11 +59,6 @@ parts:
       - ca-certificates
       - ca-certificates-java
   
-  
-  runelite:
-    plugin: dump
-    source: runelite
-
   utils:
     plugin: dump
     source: utils/
@@ -102,15 +97,6 @@ apps:
     
     environment:
       _JAVA_OPTIONS: -Duser.home="$SNAP_USER_COMMON"
-
-
-  runelite:
-    command: bin/runelite-launcher
-    desktop: usr/share/applications/runelite.desktop
-    plugs:
-      - desktop
-      - x11
-
 
   reset:
     command: reset-cache
