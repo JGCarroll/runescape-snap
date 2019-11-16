@@ -19,11 +19,10 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
-source sandbox-configure
+source setup-sandbox
 server=http://oldschool.runescape.com/jav_config.ws
 
 DownloadOSRS(){
-	notify-send 'RuneScape snap' 'This client bundle is authored by Hmm and recieves no official support from Jagex.' -t 10
 	echo Downloading OSRS package
 	if ! wget "https://oldschool.runescape.com/downloads/jagexappletviewer.jar" -O "$SNAP_USER_COMMON/osrs.jar"
 	then 

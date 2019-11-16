@@ -324,8 +324,6 @@ if [[ -n "$XDG_RUNTIME_DIR" && -z "$DISABLE_WAYLAND" ]]; then
     fi
 fi
 
-#Redirect ALSA to Pulseaudio
-export ALSA_CONFIG_PATH="$SNAP/etc/asound.conf"
 
 # Make PulseAudio socket available inside the snap-specific $XDG_RUNTIME_DIR
 if [ -n "$XDG_RUNTIME_DIR" ]; then

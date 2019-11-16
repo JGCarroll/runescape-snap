@@ -21,15 +21,15 @@ parts:
     plugin: dump
     source: .
     override-pull: 
-      wget https://content.runescape.com/downloads/ubuntu/runescape.gpg.key
+      wget https://content.runescape.com/downloads/ubuntu/runescape.gpg.key -O $SNAPCRAFT_PART_SRC/runescape.gpg.key
 
   
   rs3:
     plugin: dump
     source: rs3/
     stage-packages:
+      - libnotify-bin
       - x11-utils
-      - libcurl3
       - libpango-1.0-0
       - libcairo2
       - libgdk-pixbuf2.0-0
@@ -41,7 +41,6 @@ parts:
       - dpkg
       - gnupg
       - wget
-  
 
   osrs:
     plugin: dump
@@ -51,13 +50,13 @@ parts:
       - x11-utils
       - default-jre
       - libpulse0
-      - libglu1-mesa
       - wget
       - libasound2
       - libasound2-plugins
     build-packages:
       - ca-certificates
       - ca-certificates-java
+
   
   utils:
     plugin: dump
@@ -66,6 +65,7 @@ parts:
 layout:
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
     bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
+
 
 apps:
   rs3:
@@ -77,12 +77,13 @@ apps:
       - network
       - audio-playback
       - x11
+      - wayland
       - opengl
-    environment:
-      SDL_AUDIODRIVER: alsa
-      PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3' media.role='game'
-      SDL_VIDEO_X11_WMCLASS: RuneScape
 
+    environment:
+      PULSE_LATENCY_MSEC: 60
+      PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3.png' media.role='game'
+      SDL_VIDEO_X11_WMCLASS: RuneScape
 
   osrs:
     command: bin/osrs-launcher
@@ -93,13 +94,17 @@ apps:
       - network
       - audio-playback
       - x11
+      - wayland
       - opengl
     
     environment:
       _JAVA_OPTIONS: -Duser.home="$SNAP_USER_COMMON"
+      PULSE_PROP_OVERRIDE: application.name='Old School RuneScape' application.icon_name='osrs.png' media.role='game'
+      ALSA_CONFIG_PATH: $SNAP/etc/asound.conf
 
   reset:
     command: reset-cache
+
 
   sources:
     command: list-sources
