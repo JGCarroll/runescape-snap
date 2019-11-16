@@ -41,7 +41,8 @@ parts:
       - dpkg
       - gnupg
       - wget
-
+      - libasound2
+      - libasound2-plugins
   osrs:
     plugin: dump
     source: osrs
@@ -81,7 +82,8 @@ apps:
       - opengl
 
     environment:
-      PULSE_LATENCY_MSEC: 60
+      SDL_AUDIODRIVER: alsa
+      ALSA_CONFIG_PATH: $SNAP/etc/asound.conf
       PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3.png' media.role='game'
       SDL_VIDEO_X11_WMCLASS: RuneScape
 
