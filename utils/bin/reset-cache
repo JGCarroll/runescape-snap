@@ -1,3 +1,3 @@
 #!/bin/bash
-rm "${SNAP_USER_COMMON:?}" "${SNAP_USER_DATA:?}" -rf
-echo "Done"
+rm "${SNAP_USER_COMMON:?}" "${SNAP_USER_DATA:?}" -rf > /dev/null 2>&1
+echo "Done - All locally stored game assets, settings, and snap integration data has been cleared. The next run will longer to initialise, and the game will be slower until assets are regenerated"
