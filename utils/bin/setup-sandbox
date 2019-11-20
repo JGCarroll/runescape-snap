@@ -18,6 +18,8 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
+echo "Setting up the application sandbox. This can take a while when the snap updates"
+
 START=$(date +%s.%N)
 
 declare -A PIDS
