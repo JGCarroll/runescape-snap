@@ -43,6 +43,8 @@ parts:
       - wget
       - libasound2
       - libasound2-plugins
+
+
   osrs:
     plugin: dump
     source: osrs
@@ -66,6 +68,9 @@ parts:
 layout:
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
     bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
+  /usr/share/libdrm:
+    bind: $SNAP/usr/share/libdrm
+
 
 
 apps:
