@@ -41,9 +41,7 @@ parts:
       - dpkg
       - gnupg
       - wget
-      - libasound2
-      - libasound2-plugins
-
+      - pulseaudio-utils
 
   osrs:
     plugin: dump
@@ -72,7 +70,6 @@ layout:
     bind: $SNAP/usr/share/libdrm
 
 
-
 apps:
   rs3:
     command: bin/rs3-launcher
@@ -87,8 +84,7 @@ apps:
       - opengl
 
     environment:
-      SDL_AUDIODRIVER: alsa
-      ALSA_CONFIG_PATH: $SNAP/etc/asound.conf
+      SDL_AUDIODRIVER: pulse
       PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3.png' media.role='game'
       SDL_VIDEO_X11_WMCLASS: RuneScape
 
