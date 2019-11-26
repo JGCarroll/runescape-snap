@@ -21,7 +21,7 @@
 
 source setup-sandbox
 server=http://www.runescape.com/k=5/l=\$\(Language:0\)/jav_config.ws
-latestLauncher=launcher111119
+latestLauncher=launcher-2.2.6
 
 function DownloadRS3(){
 	repoRoot="http://content.runescape.com/downloads/ubuntu/"
