@@ -41,7 +41,6 @@ parts:
       - dpkg
       - gnupg
       - wget
-      - pulseaudio-utils
 
   osrs:
     plugin: dump
@@ -84,7 +83,7 @@ apps:
       - opengl
 
     environment:
-      SDL_AUDIODRIVER: pulse
+      PULSE_LATENCY_MSEC: 150
       PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3.png' media.role='game'
       SDL_VIDEO_X11_WMCLASS: RuneScape
 

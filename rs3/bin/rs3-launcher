@@ -107,11 +107,6 @@ then
 	SetupDirs
 fi
 
-# This warms up the sound system on the host, and helps reduce audio underruns
-# As to why it helps, who knows. This may vary a lot by container/native install, distribution, drivers, etc. Maybe I'm just crazy.
-echo "Warming up Pulseaudio"
-paplay $SNAP/sine.wav --volume=0
-
 #Execute game
 echo "Launching RuneScape"
 if [[ -z $@ ]]; then
