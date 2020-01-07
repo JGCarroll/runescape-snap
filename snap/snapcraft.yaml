@@ -96,6 +96,8 @@ apps:
       - x11
       - wayland
       - opengl
+      - gsettings
+      - pulseaudio
     
     environment:
       _JAVA_OPTIONS: -Duser.home="$SNAP_USER_COMMON"
