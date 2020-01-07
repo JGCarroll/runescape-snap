@@ -33,38 +33,37 @@ function DownloadRS3(){
 
 	# Clear up previous runs
 	echo Clearing previous installers
-	rm -rf "$SNAP_USER_COMMON/runescape" "${SNAP_USER_COMMON:?}/usr" "$SNAP_USER_COMMON/repoRelease" "$SNAP_USER_COMMON/repoRelease.gpg" "$SNAP_USER_COMMON/packages" "$SNAP_USER_COMMON/rs.deb"
+	rm -rf "$SNAP_USER_COMMON/runescape" "${SNAP_USER_COMMON:?}/usr" "$SNAP_USER_COMMON/Release" "$SNAP_USER_COMMON/Release.gpg" "$SNAP_USER_COMMON/Packages" "$SNAP_USER_COMMON/rs.deb"
 
 	echo "Downloading RuneScape repository info"
-	wget "$repo"Release -O "$SNAP_USER_COMMON/repoRelease"
+	wget "$repo"Release -O "$SNAP_USER_COMMON/Release"
 
 	echo "Downloading RuneScape repository info signature"
-	wget "$repo"Release.gpg -O "$SNAP_USER_COMMON/repoRelease.gpg"
+	wget "$repo"Release.gpg -O "$SNAP_USER_COMMON/Release.gpg"
 
-	if ! gpg --batch --verify "$SNAP_USER_COMMON/repoRelease.gpg" "$SNAP_USER_COMMON/repoRelease"
+	if ! gpg --batch --verify "$SNAP_USER_COMMON/Release.gpg" "$SNAP_USER_COMMON/Release"
 	then
 		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' -t 10 
 		exit 1
 	fi
-	echo "Repository info looks valid!"
-
-	packageFile=$(grep "SHA256" -A 10 "$SNAP_USER_COMMON/repoRelease" | grep amd64/Packages$ | cut -d " " -f 4)	
-	packageFileHash=$(grep "SHA256" -A 10 "$SNAP_USER_COMMON/repoRelease" | grep amd64/Packages$ | cut -d " " -f 2)
+	echo "Repository metadata looks valid"
+	
+	packageFileHash=$(awk '/SHA256:/ {sha=1} ; sha == 1 && $NF == "non-free/binary-amd64/Packages" {print $1; exit}' "$SNAP_USER_COMMON/Release")
 
 	echo "Downloading repository package list"
-	wget "$repo$packageFile" -O "$SNAP_USER_COMMON/packages"
+	wget "$repo"non-free/binary-amd64/Packages -O "$SNAP_USER_COMMON/Packages"
 
-	if [[ $packageFileHash != $(sha256sum "$SNAP_USER_COMMON/packages" | cut -d " " -f 1) ]]
+	if [[ $packageFileHash != $(sha256sum "$SNAP_USER_COMMON/Packages" | cut -d " " -f 1) ]]
 	then
 		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' -t 10 
 		exit 1
 	fi
-	echo "Repository package list looks valid!"
+	echo "Repository package list looks valid"
 
-	debFile=$(grep Filename "$SNAP_USER_COMMON/packages" | cut -d " " -f 2)
-	debHash=$(grep SHA256 "$SNAP_USER_COMMON/packages" | cut -d " " -f 2)
+	debFile=$(awk ' /Package: runescape-launcher/ {rs=true}; rs == true && /Filename:/ {print $2; exit}' $SNAP_USER_COMMON/Packages )
+	debHash=$(awk ' /Package: runescape-launcher/ {rs=true}; rs == true && /SHA256:/ {print $2; exit}' $SNAP_USER_COMMON/Packages)
 
-	echo "Downloading RuneScape installer"
+	echo "Downloading RuneScape launcher"
 	wget "$repoRoot$debFile" -O "$SNAP_USER_COMMON/rs.deb"
 
 	if [[ $debHash != $(sha256sum "$SNAP_USER_COMMON/rs.deb" | cut -d " " -f 1) ]]
@@ -72,14 +71,14 @@ function DownloadRS3(){
 		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' -t 10 
 		exit 1
 	fi
-	echo "Runescape installer looks valid!"
+	echo "Launcher looks valid"
 
 	#Extract the files and put them into the right place
 	dpkg-deb -x "$SNAP_USER_COMMON/rs.deb" "$SNAP_USER_COMMON/"
 	mv "$SNAP_USER_COMMON/usr/share/games/runescape-launcher/runescape" "$SNAP_USER_COMMON/$latestLauncher"
 
 	echo "Clearing up downloads"
-	rm -rf "${SNAP_USER_COMMON:?}/usr" "$SNAP_USER_COMMON/repoRelease" "$SNAP_USER_COMMON/repoRelease.gpg" "$SNAP_USER_COMMON/packages" "$SNAP_USER_COMMON/rs.deb"
+	rm -rf "${SNAP_USER_COMMON:?}/usr" "$SNAP_USER_COMMON/Release" "$SNAP_USER_COMMON/Release.gpg" "$SNAP_USER_COMMON/Packages" "$SNAP_USER_COMMON/rs.deb"
 	
 }
 function SetupDirs(){
