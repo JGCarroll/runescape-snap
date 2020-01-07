@@ -20,7 +20,9 @@
 
 echo "Setting up the application sandbox. This can take a while when the snap updates"
 
-START=$(date +%s.%N)
+#################
+# Launcher init #
+#################
 
 declare -A PIDS
 function async_exec() {
@@ -32,6 +34,15 @@ function wait_for_async_execs() {
   do
     wait $i && continue || echo "ERROR: ${PIDS[$i]} exited abnormally with status $?"
   done
+}
+
+# ensure_dir_exists calls `mkdir -p` if the given path is not a directory.
+# This speeds up execution time by avoiding unnecessary calls to mkdir.
+#
+# Usage: ensure_dir_exists <path> [<mkdir-options>]...
+#
+function ensure_dir_exists() {
+  [ -d "$1" ] ||  mkdir -p "$@"
 }
 
 # On Fedora $SNAP is under /var and there is some magic to map it to /snap.
@@ -50,7 +61,7 @@ REALHOME=`getent passwd $UID | cut -d ':' -f 6`
 
 # Set config folder to local path
 export XDG_CONFIG_HOME=$SNAP_USER_DATA/.config
-mkdir -p $XDG_CONFIG_HOME -m 700
+ensure_dir_exists $XDG_CONFIG_HOME -m 700
 
 # If the user has modified their user-dirs settings, force an update
 if [[ -f $XDG_CONFIG_HOME/user-dirs.dirs.md5sum && -f $XDG_CONFIG_HOME/user-dirs.locale.md5sum ]]; then
@@ -206,7 +217,7 @@ prepend_dir XDG_DATA_DIRS $SNAP_USER_DATA
 
 # Set XDG_DATA_HOME to local path
 export XDG_DATA_HOME=$SNAP_USER_DATA/.local/share
-mkdir -p $XDG_DATA_HOME
+ensure_dir_exists $XDG_DATA_HOME
 
 # Workaround for GLib < 2.53.2 not searching for schemas in $XDG_DATA_HOME:
 #   https://bugzilla.gnome.org/show_bug.cgi?id=741335
@@ -218,10 +229,10 @@ if [[ -d $SNAP_USER_DATA/.cache && ! -e $XDG_CACHE_HOME ]]; then
   # the .cache directory used to be stored under $SNAP_USER_DATA, migrate it
   mv $SNAP_USER_DATA/.cache $SNAP_USER_COMMON/
 fi
-mkdir -p $XDG_CACHE_HOME
+ensure_dir_exists $XDG_CACHE_HOME
 
 # Create $XDG_RUNTIME_DIR if not exists (to be removed when LP: #1656340 is fixed)
-[ -n "$XDG_RUNTIME_DIR" ] && mkdir -p $XDG_RUNTIME_DIR -m 700
+[ -n "$XDG_RUNTIME_DIR" ] && ensure_dir_exists $XDG_RUNTIME_DIR -m 700
 
 # Ensure the app finds locale definitions (requires locales-all to be installed)
 append_dir LOCPATH $RUNTIME/usr/lib/locale
@@ -326,7 +337,6 @@ if [[ -n "$XDG_RUNTIME_DIR" && -z "$DISABLE_WAYLAND" ]]; then
     fi
 fi
 
-
 # Make PulseAudio socket available inside the snap-specific $XDG_RUNTIME_DIR
 if [ -n "$XDG_RUNTIME_DIR" ]; then
     pulsenative="pulse/native"
@@ -335,9 +345,6 @@ if [ -n "$XDG_RUNTIME_DIR" ]; then
         export PULSE_SERVER="unix:${pulseaudio_sockpath}"
     fi
 fi
-
-
-
 
 # GI repository
 [ "$WITH_RUNTIME" = yes ] && prepend_dir GI_TYPELIB_PATH $RUNTIME/usr/lib/$ARCH/girepository-1.0
@@ -383,7 +390,7 @@ if [ $needs_update = true ]; then
   # This fontconfig fragment is installed in a location that is
   # included by the system fontconfig configuration: namely the
   # etc/fonts/conf.d/50-user.conf file.
-  mkdir -p $XDG_CONFIG_HOME/fontconfig
+  ensure_dir_exists $XDG_CONFIG_HOME/fontconfig
   async_exec make_user_fontconfig > $XDG_CONFIG_HOME/fontconfig/fonts.conf
 
   # the themes symlink are needed for GTK 3.18 when the prefix isn't changed
@@ -414,7 +421,7 @@ export GIO_MODULE_DIR=$XDG_CACHE_HOME/gio-modules
 function compile_giomodules {
   if [ -f $1/glib-2.0/gio-querymodules ]; then
     rm -rf $GIO_MODULE_DIR
-    mkdir -p $GIO_MODULE_DIR
+    ensure_dir_exists $GIO_MODULE_DIR
     ln -s $1/gio/modules/*.so $GIO_MODULE_DIR
     $1/glib-2.0/gio-querymodules $GIO_MODULE_DIR
   fi
@@ -428,7 +435,7 @@ GS_SCHEMA_DIR=$XDG_DATA_HOME/glib-2.0/schemas
 function compile_schemas {
   if [ -f "$1" ]; then
     rm -rf $GS_SCHEMA_DIR
-    mkdir -p $GS_SCHEMA_DIR
+    ensure_dir_exists $GS_SCHEMA_DIR
     for ((i = 0; i < ${#data_dirs_array[@]}; i++)); do
       schema_dir="${data_dirs_array[$i]}/glib-2.0/schemas"
       if [ -f "$schema_dir/gschemas.compiled" ]; then
@@ -457,7 +464,7 @@ fi
 DCONF_DEST_USER_DIR=$SNAP_USER_DATA/.config/dconf
 if [ ! -f $DCONF_DEST_USER_DIR/user ]; then
   if [ -f $REALHOME/.config/dconf/user ]; then
-    mkdir -p $DCONF_DEST_USER_DIR
+    ensure_dir_exists $DCONF_DEST_USER_DIR
     ln -s $REALHOME/.config/dconf/user $DCONF_DEST_USER_DIR
   fi
 fi
@@ -480,13 +487,18 @@ fi
 # Icon themes cache
 if [ $needs_update = true ]; then
   rm -rf $XDG_DATA_HOME/icons
-  mkdir -p $XDG_DATA_HOME/icons
+  ensure_dir_exists $XDG_DATA_HOME/icons
   for ((i = 0; i < ${#data_dirs_array[@]}; i++)); do
+    # The runtime and theme content snaps should already contain icon caches
+    # so we skip them to optimise app start time.
+    if [[ "${data_dirs_array[$i]}" == "$SNAP/data-dir" || "${data_dirs_array[$i]}" == "$RUNTIME/"* ]]; then
+      continue
+    fi
     for theme in "${data_dirs_array[$i]}/icons/"*; do
       if [ -f "$theme/index.theme" -a ! -f "$theme/icon-theme.cache" ]; then
         theme_dir=$XDG_DATA_HOME/icons/$(basename "$theme")
         if [ ! -d "$theme_dir" ]; then
-          mkdir -p "$theme_dir"
+          ensure_dir_exists "$theme_dir"
           ln -s $theme/* "$theme_dir"
           if [ -f $RUNTIME/usr/sbin/update-icon-caches ]; then
             async_exec $RUNTIME/usr/sbin/update-icon-caches "$theme_dir"
@@ -505,7 +517,7 @@ gtk_configs=(gtk-3.0/settings.ini gtk-3.0/bookmarks gtk-2.0/gtkfilechooser.ini)
 for f in ${gtk_configs[@]}; do
   dest="$XDG_CONFIG_HOME/$f"
   if [ ! -L "$dest" ]; then
-    mkdir -p `dirname $dest`
+    ensure_dir_exists `dirname $dest`
     ln -s $REALHOME/.config/$f $dest
   fi
 done
@@ -513,7 +525,7 @@ done
 # create symbolic link to ibus socket path for ibus to look up its socket files
 # (see comments #3 and #6 on https://launchpad.net/bugs/1580463)
 IBUS_CONFIG_PATH=$XDG_CONFIG_HOME/ibus
-mkdir -p $IBUS_CONFIG_PATH
+ensure_dir_exists $IBUS_CONFIG_PATH
 [ -d $IBUS_CONFIG_PATH/bus ] && rm -rf $IBUS_CONFIG_PATH/bus
 ln -sfn $REALHOME/.config/ibus/bus $IBUS_CONFIG_PATH
 
@@ -524,4 +536,5 @@ ln -sfn $REALHOME/.config/ibus/bus $IBUS_CONFIG_PATH
 [ $needs_update = true ] && echo "SNAP_DESKTOP_LAST_REVISION=$SNAP_REVISION" > $SNAP_USER_DATA/.last_revision
 
 wait_for_async_execs
+
 
