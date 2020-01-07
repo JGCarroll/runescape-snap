@@ -4,8 +4,6 @@ RuneScape 3 does provide official Linux support, but is limited in it's supporte
 Old School RuneScape does not have any Linux specific installer, but is a Java based game and can be run with a Java runtime environment.
 This Snap package resolves these dependencies issues allowing for the games to run on any Linux compatible system, with the Snap benefits of sandboxing and confinement.
 
-This snap used to provide a solution for RuneLite. After working with the RuneLite upstream, RuneLite now has it's own official snap, so users looking for RuneLite can get it directly from the authors now.
-
 
 ## Install Instructions
 Ensure snapd is installed. Snap is installed by default on most Ubuntu derivatives. [Instructions can be found here](https://docs.snapcraft.io/installing-snapd/6735)
@@ -19,6 +17,8 @@ The snap can be built on any Linux system with snapd installed.
 
 `sudo snap install snapcraft --classic`
 
+`sudo snap install multipass --classic`
+
 `snapcraft`
 
 `sudo snap install rslauncher_release.snap --dangerous`
@@ -27,7 +27,7 @@ The dangerous flag is required to install any snap package that lacks signature 
 
 ## General Info
 
-The snap does not contain Jagex code, and will dynamically fetch this from the Jagex servers on first run. The snap also does not use Jagex assets, specifically, logos, to make clear this is an unofficial package.
+The snap does not contain Jagex code, and will dynamically fetch this from the Jagex servers on first run.
 
 ## Usage Instructions
 
@@ -35,7 +35,7 @@ Once installed, desktop icons should be available in your desktops standard star
 
 `rslauncher.rs3`
 
-`rslauncher.osrs``
+`rslauncher.osrs`
 
 `rslauncher.reset`
 
