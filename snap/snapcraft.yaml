@@ -6,15 +6,11 @@ summary: RuneScape, the free MMORPG by Jagex LTD
 description: |
   Explore the fantasy world of Gielinor in the worlds most popular free to play MMORPG!
   This snap provides both Old School RuneScape and RuneScape 3!
-  This is an unofficial package provided by Hmm.
 
 type: app
 grade: stable
 confinement: strict
 license: MIT
-architectures:
-  - build-on: amd64
-    run-on: amd64
 
 parts:
   rs3-gpg:
@@ -81,6 +77,8 @@ apps:
       - x11
       - wayland
       - opengl
+      - gsettings
+      - pulseaudio
 
     environment:
       PULSE_LATENCY_MSEC: 150
