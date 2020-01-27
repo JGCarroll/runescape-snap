@@ -529,6 +529,9 @@ ensure_dir_exists $IBUS_CONFIG_PATH
 [ -d $IBUS_CONFIG_PATH/bus ] && rm -rf $IBUS_CONFIG_PATH/bus
 ln -sfn $REALHOME/.config/ibus/bus $IBUS_CONFIG_PATH
 
+# Add gvfs to library path so that opening links works properly
+append_dir LD_LIBRARY_PATH $SNAP/usr/lib/x86_64-linux-gnu/gvfs
+
 ###############################
 # Mark update and exec binary #
 ###############################

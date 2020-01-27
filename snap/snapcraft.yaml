@@ -18,7 +18,6 @@ parts:
     source: .
     override-pull: 
       wget https://content.runescape.com/downloads/ubuntu/runescape.gpg.key -O $SNAPCRAFT_PART_SRC/runescape.gpg.key
-
   
   rs3:
     plugin: dump
@@ -49,11 +48,11 @@ parts:
       - wget
       - libasound2
       - libasound2-plugins
+      - gvfs
     build-packages:
       - ca-certificates
       - ca-certificates-java
 
-  
   utils:
     plugin: dump
     source: utils/
@@ -63,7 +62,6 @@ layout:
     bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
   /usr/share/libdrm:
     bind: $SNAP/usr/share/libdrm
-
 
 apps:
   rs3:
@@ -79,7 +77,6 @@ apps:
       - opengl
       - gsettings
       - pulseaudio
-
     environment:
       PULSE_LATENCY_MSEC: 150
       PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3.png' media.role='game'
@@ -98,7 +95,6 @@ apps:
       - opengl
       - gsettings
       - pulseaudio
-    
     environment:
       _JAVA_OPTIONS: -Duser.home="$SNAP_USER_COMMON"
       PULSE_PROP_OVERRIDE: application.name='Old School RuneScape' application.icon_name='osrs.png' media.role='game'
@@ -106,7 +102,6 @@ apps:
 
   reset:
     command: reset-cache
-
 
   sources:
     command: list-sources
