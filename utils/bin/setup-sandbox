@@ -18,11 +18,11 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
-echo "Setting up the application sandbox. This can take a while when the snap updates"
-
 #################
 # Launcher init #
 #################
+
+START=$(date +%s.%N)
 
 declare -A PIDS
 function async_exec() {
@@ -232,7 +232,7 @@ fi
 ensure_dir_exists $XDG_CACHE_HOME
 
 # Create $XDG_RUNTIME_DIR if not exists (to be removed when LP: #1656340 is fixed)
-[ -n "$XDG_RUNTIME_DIR" ] && ensure_dir_exists $XDG_RUNTIME_DIR -m 700
+ensure_dir_exists $XDG_RUNTIME_DIR -m 700
 
 # Ensure the app finds locale definitions (requires locales-all to be installed)
 append_dir LOCPATH $RUNTIME/usr/lib/locale
@@ -292,7 +292,7 @@ fi
 if [ $needs_xdg_links = true ]; then
   for ((i = 0; i < ${#XDG_SPECIAL_DIRS_PATHS[@]}; i++)); do
     b=$(realpath "${XDG_SPECIAL_DIRS_PATHS[$i]}" --relative-to="$HOME")
-    if [ -e $REALHOME/$b ]; then
+    if [[ "$b" != "." && -e $REALHOME/$b ]]; then
       [ -d $HOME/$b ] && rmdir $HOME/$b 2> /dev/null
       [ ! -e $HOME/$b ] && ln -s $REALHOME/$b $HOME/$b
     fi
@@ -468,6 +468,11 @@ if [ ! -f $DCONF_DEST_USER_DIR/user ]; then
     ln -s $REALHOME/.config/dconf/user $DCONF_DEST_USER_DIR
   fi
 fi
+# symlink the runtime dconf file as well
+if [ -r $XDG_RUNTIME_DIR/../dconf/user ]; then
+  ensure_dir_exists $XDG_RUNTIME_DIR/dconf
+  ln -sf ../../dconf/user $XDG_RUNTIME_DIR/dconf/user
+fi
 
 # Testability support
 append_dir LD_LIBRARY_PATH $SNAP/testability
@@ -530,7 +535,7 @@ ensure_dir_exists $IBUS_CONFIG_PATH
 ln -sfn $REALHOME/.config/ibus/bus $IBUS_CONFIG_PATH
 
 # Add gvfs to library path so that opening links works properly
-append_dir LD_LIBRARY_PATH $SNAP/usr/lib/x86_64-linux-gnu/gvfs
+append_dir LD_LIBRARY_PATH $SNAP/usr/lib/$ARCH/gvfs
 
 ###############################
 # Mark update and exec binary #
@@ -540,4 +545,7 @@ append_dir LD_LIBRARY_PATH $SNAP/usr/lib/x86_64-linux-gnu/gvfs
 
 wait_for_async_execs
 
-
+if [ -n "$SNAP_DESKTOP_DEBUG" ]; then
+  echo "desktop-launch elapsed time: " $(date +%s.%N --date="$START seconds ago") 
+  echo "Now running: exec $@"
+fi
