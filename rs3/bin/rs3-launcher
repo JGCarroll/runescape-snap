@@ -19,9 +19,16 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
-source setup-sandbox
+source setup-sandbox	
+#This sets up the snap environment to be able to communicate from the container to the host.
+#In other snaps, you'll see either the use of the Snapcraft Desktop Helper repository, or Snapcraft extensions.
+
 server="http://www.runescape.com/k=5/l=\$\(Language:0\)/jav_config.ws"
-latestLauncher="launcher-2.2.6"
+#This is the bootstrap file the launcher uses to setup the client.
+#It can be modified by the user to choose a specific world to launch every boot, if desired.
+
+latestLauncher="launcher-2.2.6"	#When a new launcher is available, increment this string and push a new revision, so that all existing clients will update to it.
+
 networkError="Unable to connect to Jagex servers"
 
 function notify(){
@@ -29,49 +36,49 @@ function notify(){
 }
 
 function DownloadRS3(){
-	repoRoot="http://content.runescape.com/downloads/ubuntu/"
-	repo="http://content.runescape.com/downloads/ubuntu/dists/trusty/"
+	repoRoot="http://content.runescape.com/downloads/ubuntu/"	#The Jagex APT repo
+	repo="http://content.runescape.com/downloads/ubuntu/dists/trusty/"	#The distribution the APT repo provides for. (Although it mentions Trusty, there's no actual requirement Trusty be used)
 
-	# Does not overwrite any existing key in the event the public key is changed.
 	echo Importing Jagex Signing key
-	gpg --batch --import "$SNAP/runescape.gpg.key" 
+	gpg --batch --import "$SNAP/runescape.gpg.key"	#Add the Jagex signing key to the GPG store. This will be isolated to this snap.
 
-	# Clear up previous runs
+	#Clear up previous runs
 	echo Clearing previous installers
 	rm -rf "$SNAP_USER_COMMON/runescape" "${SNAP_USER_COMMON:?}/usr" "$SNAP_USER_COMMON/Release" "$SNAP_USER_COMMON/Release.gpg" "$SNAP_USER_COMMON/Packages" "$SNAP_USER_COMMON/rs.deb"
+	#Delete any files left over from previous runs of this function, effectively making it stateless.
 
 	echo "Downloading RuneScape repository info"
-	wget "$repo"Release -O "$SNAP_USER_COMMON/Release"
+	wget "$repo"Release -O "$SNAP_USER_COMMON/Release"	#Contains information on the repository
 
 	echo "Downloading RuneScape repository info signature"
-	wget "$repo"Release.gpg -O "$SNAP_USER_COMMON/Release.gpg"
+	wget "$repo"Release.gpg -O "$SNAP_USER_COMMON/Release.gpg"	#Signs the above information
 
-	if ! gpg --batch --verify "$SNAP_USER_COMMON/Release.gpg" "$SNAP_USER_COMMON/Release"
+	if ! gpg --batch --verify "$SNAP_USER_COMMON/Release.gpg" "$SNAP_USER_COMMON/Release"	#Check the validity of the above two files and error out if they don't match (Including if the network failed, I.E, empty files)
 	then
 		notify "$networkError"
 		exit 1
 	fi
 	echo "Repository metadata looks valid"
 	
-	packageFileHash=$(awk '/SHA256:/ {sha=1} ; sha == 1 && $NF == "non-free/binary-amd64/Packages" {print $1; exit}' "$SNAP_USER_COMMON/Release")
+	packageFileHash=$(awk '/SHA256:/ {sha=1} ; sha == 1 && $NF == "non-free/binary-amd64/Packages" {print $1; exit}' "$SNAP_USER_COMMON/Release")	#Find the repository information for AMD64 packages/
 
 	echo "Downloading repository package list"
 	wget "$repo"non-free/binary-amd64/Packages -O "$SNAP_USER_COMMON/Packages"
 
-	if [[ $packageFileHash != $(sha256sum "$SNAP_USER_COMMON/Packages" | cut -d " " -f 1) ]]
+	if [[ $packageFileHash != $(sha256sum "$SNAP_USER_COMMON/Packages" | cut -d " " -f 1) ]]	#Check the integrity again
 	then
 		notify "$networkError"
 		exit 1
 	fi
 	echo "Repository package list looks valid"
 
-	debFile=$(awk ' /Package: runescape-launcher/ {rs=true}; rs == true && /Filename:/ {print $2; exit}' $SNAP_USER_COMMON/Packages )
+	debFile=$(awk ' /Package: runescape-launcher/ {rs=true}; rs == true && /Filename:/ {print $2; exit}' $SNAP_USER_COMMON/Packages )	#Download the actual deb file containing the RS3 launcher
 	debHash=$(awk ' /Package: runescape-launcher/ {rs=true}; rs == true && /SHA256:/ {print $2; exit}' $SNAP_USER_COMMON/Packages)
 
 	echo "Downloading RuneScape launcher"
 	wget "$repoRoot$debFile" -O "$SNAP_USER_COMMON/rs.deb"
 
-	if [[ $debHash != $(sha256sum "$SNAP_USER_COMMON/rs.deb" | cut -d " " -f 1) ]]
+	if [[ $debHash != $(sha256sum "$SNAP_USER_COMMON/rs.deb" | cut -d " " -f 1) ]]	#Check the integrity again!
 	then 
 		notify "$networkError"
 		exit 1
@@ -79,16 +86,18 @@ function DownloadRS3(){
 	echo "Launcher looks valid"
 
 	#Extract the files and put them into the right place
-	dpkg-deb -x "$SNAP_USER_COMMON/rs.deb" "$SNAP_USER_COMMON/"
-	mv "$SNAP_USER_COMMON/usr/share/games/runescape-launcher/runescape" "$SNAP_USER_COMMON/$latestLauncher"
+	dpkg-deb -x "$SNAP_USER_COMMON/rs.deb" "$SNAP_USER_COMMON/"	#ar or 7z could also do this. Simly decompress the deb file.
+	mv "$SNAP_USER_COMMON/usr/share/games/runescape-launcher/runescape" "$SNAP_USER_COMMON/$latestLauncher"	#Move the launcher to where we'll be expecting it!
 
 	echo "Clearing up downloads"
 	rm -rf "${SNAP_USER_COMMON:?}/usr" "$SNAP_USER_COMMON/Release" "$SNAP_USER_COMMON/Release.gpg" "$SNAP_USER_COMMON/Packages" "$SNAP_USER_COMMON/rs.deb"
+	#Clear up temporary files
 	
 }
 function SetupDirs(){
 	echo "Directing cache to $SNAP_USER_COMMON"
-	# Set up the cache location to exist in $SNAP_USER_COMMON rather than $HOME, preventing disk waste on upgrades when $HOME is snapshot.
+	#Set up the cache location to exist in $SNAP_USER_COMMON rather than $HOME, preventing disk waste on upgrades when $HOME is snapshot.
+	#Additionally if this isn't set, snap revision updates will break RS3!
 	mkdir "$SNAP_USER_COMMON/rs3cache/" -p
 	mkdir "$SNAP_USER_DATA/Jagex/launcher/" -p
 	echo cache_folder="$SNAP_USER_COMMON"/rs3cache/ > "$SNAP_USER_DATA/Jagex/launcher/preferences.cfg"
@@ -98,13 +107,13 @@ function SetupDirs(){
 if [[ -f "$SNAP_USER_DATA/rs3-user-config" ]]
 then
         echo "Found RS3 config"
-        source "$SNAP_USER_DATA/rs3-user-config" # User can add exports/vars
+        source "$SNAP_USER_DATA/rs3-user-config"	#User can add exports/vars, such as changing $server, adding Mesa overrides, etc.
         echo "Finished reading RS3 config"
 fi
 
 unset XMODIFIERS
 
-if [[ ! -f "$SNAP_USER_COMMON/$latestLauncher" ]]
+if [[ ! -f "$SNAP_USER_COMMON/$latestLauncher" ]]	#Check if the launcher needs updating
 then
 	echo "Launcher doesn't appear to exist, running setup!" 
 	DownloadRS3
@@ -114,7 +123,7 @@ fi
 #Execute game
 echo "Launching RuneScape"
 if [[ -z $@ ]]; then
-	$SNAP_USER_COMMON/$latestLauncher --configURI  $server
+	$SNAP_USER_COMMON/$latestLauncher --configURI  $server	#Use the default configuration file
 else
-	$SNAP_USER_COMMON/$latestLauncher --configURI "$@"
+	$SNAP_USER_COMMON/$latestLauncher --configURI "$@"	#Use the configuration file passed via the CLI, usually a beta client
 fi

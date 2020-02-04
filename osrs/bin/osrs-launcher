@@ -19,11 +19,17 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
-source setup-sandbox
-server="http://oldschool.runescape.com/jav_config.ws"
+source setup-sandbox	
+#This sets up the snap environment to be able to communicate from the container to the host.
+#In other snaps, you'll see either the use of the Snapcraft Desktop Helper repository, or Snapcraft extensions.
+
+server="http://oldschool.runescape.com/jav_config.ws"	
+#This is the bootstrap file the launcher uses to setup the client.
+#It can be modified by the user to choose a specific world to launch every boot, if desired.
+
 networkError="Unable to connect to Jagex servers"
 fileError="Jagex server provided an unexpected file, please report this on the rslauncher github repo"
-launcher="040220.jar"
+launcher="040220.jar"	#When a new launcher is available, increment this string and push a new revision, so that all existing clients will update to it.
 
 function notify(){
         xmessage -center -timeout 60 $1
@@ -32,32 +38,35 @@ function notify(){
 
 
 DownloadOSRS(){
-	rm -rf "$SNAP_USER_COMMON/osrs-dmg/" "$SNAP_USER_COMMON/osrs.dmg"
+	rm -rf "$SNAP_USER_COMMON/osrs-dmg/" "$SNAP_USER_COMMON/osrs.dmg"	#Delete any files left over from previous runs of this function, effectively making it stateless.
 	echo Downloading OSRS package
-	if ! wget "https://www.runescape.com/downloads/OldSchool.dmg" -O "$SNAP_USER_COMMON/osrs.dmg"
+
+	#Check the connection succeeds. Since this is HTTPS, the DMG file is transparently checked for validity.
+	#A direct download to jagexappletviewer.jar is available but intentionally not used.
+	if ! wget "https://www.runescape.com/downloads/OldSchool.dmg" -O "$SNAP_USER_COMMON/osrs.dmg"	
 	then 
 		echo "Failed to get osrs.dmg"
 		notify "$networkError"
 		exit 1
 	fi
-	if ! "$SNAP"/usr/lib/p7zip/7z x "$SNAP_USER_COMMON/osrs.dmg" -o"$SNAP_USER_COMMON/osrs-dmg/"
+	if ! "$SNAP"/usr/lib/p7zip/7z x "$SNAP_USER_COMMON/osrs.dmg" -o"$SNAP_USER_COMMON/osrs-dmg/"	#Extract the DMG. Non-success is likely due to the DMG file being upgraded to APFS over HFS+.
 	then
 		notify "$fileError"
 		exit 1
 	fi
-	cp "$SNAP_USER_COMMON/osrs-dmg/Old School RuneScape/Old School RuneScape.app/Contents/Java/jagexappletviewer.jar" "$SNAP_USER_COMMON/$launcher"
-	rm -rf "$SNAP_USER_COMMON/osrs-dmg/" "$SNAP_USER_COMMON/osrs.dmg"
+	cp "$SNAP_USER_COMMON/osrs-dmg/Old School RuneScape/Old School RuneScape.app/Contents/Java/jagexappletviewer.jar" "$SNAP_USER_COMMON/$launcher"	#Put the applet viewer where its expected.
+	rm -rf "$SNAP_USER_COMMON/osrs-dmg/" "$SNAP_USER_COMMON/osrs.dmg"	#Clear up temporary files
 }
 
 if [[ -f "$SNAP_USER_DATA/osrs-user-config" ]]
 then
 	echo "Found OSRS config"
-	source "$SNAP_USER_DATA/osrs-user-config" # User can add exports/vars to this file if required, as program itself is read only.
+	source "$SNAP_USER_DATA/osrs-user-config"	#User can add exports/vars, such as changing $server, adding Java overrides, etc.
 	echo "Finished reading OSRS config"
 fi
 
 
-if [[ ! -f "$SNAP_USER_COMMON/$launcher" ]]
+if [[ ! -f "$SNAP_USER_COMMON/$launcher" ]]	#Check if the launcher needs updating
 then
 	echo "Launcher doesn't appear to exist, running setup!"
 	DownloadOSRS
