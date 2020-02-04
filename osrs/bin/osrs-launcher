@@ -32,7 +32,7 @@ function notify(){
 
 
 DownloadOSRS(){
-	rm -rf "SNAP_USER_COMMON/osrs-dmg" "$SNAP_USER_COMMON/osrs.dmg"
+	rm -rf "$SNAP_USER_COMMON/osrs-dmg/" "$SNAP_USER_COMMON/osrs.dmg"
 	echo Downloading OSRS package
 	if ! wget "https://www.runescape.com/downloads/OldSchool.dmg" -O "$SNAP_USER_COMMON/osrs.dmg"
 	then 
@@ -46,7 +46,7 @@ DownloadOSRS(){
 		exit 1
 	fi
 	cp "$SNAP_USER_COMMON/osrs-dmg/Old School RuneScape/Old School RuneScape.app/Contents/Java/jagexappletviewer.jar" "$SNAP_USER_COMMON/$launcher"
-	rm -rf "SNAP_USER_COMMON/osrs-dmg" "$SNAP_USER_COMMON/osrs.dmg"
+	rm -rf "$SNAP_USER_COMMON/osrs-dmg/" "$SNAP_USER_COMMON/osrs.dmg"
 }
 
 if [[ -f "$SNAP_USER_DATA/osrs-user-config" ]]
