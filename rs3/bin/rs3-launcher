@@ -20,8 +20,13 @@
 #SOFTWARE.
 
 source setup-sandbox
-server=http://www.runescape.com/k=5/l=\$\(Language:0\)/jav_config.ws
-latestLauncher=launcher-2.2.6
+server="http://www.runescape.com/k=5/l=\$\(Language:0\)/jav_config.ws"
+latestLauncher="launcher-2.2.6"
+networkError="Unable to connect to Jagex servers"
+
+function notify(){
+	xmessage -center -timeout 60 $1
+}
 
 function DownloadRS3(){
 	repoRoot="http://content.runescape.com/downloads/ubuntu/"
@@ -43,7 +48,7 @@ function DownloadRS3(){
 
 	if ! gpg --batch --verify "$SNAP_USER_COMMON/Release.gpg" "$SNAP_USER_COMMON/Release"
 	then
-		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' -t 10 
+		notify "$networkError"
 		exit 1
 	fi
 	echo "Repository metadata looks valid"
@@ -55,7 +60,7 @@ function DownloadRS3(){
 
 	if [[ $packageFileHash != $(sha256sum "$SNAP_USER_COMMON/Packages" | cut -d " " -f 1) ]]
 	then
-		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' -t 10 
+		notify "$networkError"
 		exit 1
 	fi
 	echo "Repository package list looks valid"
@@ -68,7 +73,7 @@ function DownloadRS3(){
 
 	if [[ $debHash != $(sha256sum "$SNAP_USER_COMMON/rs.deb" | cut -d " " -f 1) ]]
 	then 
-		notify-send 'RuneScape snap' 'Unable to perform first time setup, is the network fully functional?' -t 10 
+		notify "$networkError"
 		exit 1
 	fi
 	echo "Launcher looks valid"

@@ -6,7 +6,6 @@ summary: RuneScape, the free MMORPG by Jagex LTD
 description: |
   Explore the fantasy world of Gielinor in the worlds most popular free to play MMORPG!
   This snap provides both Old School RuneScape and RuneScape 3!
-
 type: app
 grade: stable
 confinement: strict
@@ -23,7 +22,6 @@ parts:
     plugin: dump
     source: rs3/
     stage-packages:
-      - libnotify-bin
       - x11-utils
       - libpango-1.0-0
       - libcairo2
@@ -41,7 +39,6 @@ parts:
     plugin: dump
     source: osrs
     stage-packages:
-      - libnotify-bin
       - x11-utils
       - default-jre
       - libpulse0
@@ -49,6 +46,7 @@ parts:
       - libasound2
       - libasound2-plugins
       - gvfs
+      - p7zip-full
     build-packages:
       - ca-certificates
       - ca-certificates-java
@@ -96,7 +94,6 @@ apps:
       - gsettings
       - pulseaudio
     environment:
-      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_COMMON"
       PULSE_PROP_OVERRIDE: application.name='Old School RuneScape' application.icon_name='osrs.png' media.role='game'
       ALSA_CONFIG_PATH: $SNAP/etc/asound.conf
 

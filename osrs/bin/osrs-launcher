@@ -20,16 +20,33 @@
 #SOFTWARE.
 
 source setup-sandbox
-server=http://oldschool.runescape.com/jav_config.ws
+server="http://oldschool.runescape.com/jav_config.ws"
+networkError="Unable to connect to Jagex servers"
+fileError="Jagex server provided an unexpected file, please report this on the rslauncher github repo"
+launcher="040220.jar"
+
+function notify(){
+        xmessage -center -timeout 60 $1
+}
+
+
 
 DownloadOSRS(){
+	rm -rf "SNAP_USER_COMMON/osrs-dmg" "$SNAP_USER_COMMON/osrs.dmg"
 	echo Downloading OSRS package
-	if ! wget "https://oldschool.runescape.com/downloads/jagexappletviewer.jar" -O "$SNAP_USER_COMMON/osrs.jar"
+	if ! wget "https://www.runescape.com/downloads/OldSchool.dmg" -O "$SNAP_USER_COMMON/osrs.dmg"
 	then 
-		echo "Failed to get osrs.jar"
-		notify-send 'Network error' 'Unable to connect to Jagex for first time setup!' -t 10
+		echo "Failed to get osrs.dmg"
+		notify "$networkError"
 		exit 1
 	fi
+	if ! "$SNAP"/usr/lib/p7zip/7z x "$SNAP_USER_COMMON/osrs.dmg" -o"$SNAP_USER_COMMON/osrs-dmg/"
+	then
+		notify "$fileError"
+		exit 1
+	fi
+	cp "$SNAP_USER_COMMON/osrs-dmg/Old School RuneScape/Old School RuneScape.app/Contents/Java/jagexappletviewer.jar" "$SNAP_USER_COMMON/$launcher"
+	rm -rf "SNAP_USER_COMMON/osrs-dmg" "$SNAP_USER_COMMON/osrs.dmg"
 }
 
 if [[ -f "$SNAP_USER_DATA/osrs-user-config" ]]
@@ -40,11 +57,11 @@ then
 fi
 
 
-if [[ ! -f "$SNAP_USER_COMMON/osrs.jar" ]]
+if [[ ! -f "$SNAP_USER_COMMON/$launcher" ]]
 then
 	echo "Launcher doesn't appear to exist, running setup!"
 	DownloadOSRS
 fi
 
 echo "Launching OSRS"
-"$SNAP/usr/lib/jvm/java-11-openjdk-amd64/bin/java" -Djava.class.path="$SNAP_USER_COMMON"/osrs.jar -Dsun.java2d.nodraw=true -Dcom.jagex.config=$server -Xmx512m -Xss2m -XX:CompileThreshold=1500 -XX:+UseConcMarkSweepGC jagexappletviewer "$SNAP_USER_COMMON"
+"$SNAP/usr/lib/jvm/java-11-openjdk-amd64/bin/java" -Duser.home="$SNAP_USER_COMMON" -Djava.system.class.loader=app.systemclassloader -Dcom.jagex.config=$server -Xmx512m -cp "$SNAP_USER_COMMON/$launcher" jagexappletviewer "."
