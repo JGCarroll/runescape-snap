@@ -64,9 +64,10 @@ export XDG_CONFIG_HOME=$SNAP_USER_DATA/.config
 ensure_dir_exists $XDG_CONFIG_HOME -m 700
 
 # If the user has modified their user-dirs settings, force an update
-if [[ -f $XDG_CONFIG_HOME/user-dirs.dirs.md5sum && -f $XDG_CONFIG_HOME/user-dirs.locale.md5sum ]]; then
-  if [[ "$(md5sum < $REALHOME/.config/user-dirs.dirs)" != "$(cat $XDG_CONFIG_HOME/user-dirs.dirs.md5sum)" ||
-        "$(md5sum < $REALHOME/.config/user-dirs.locale)" != "$(cat $XDG_CONFIG_HOME/user-dirs.locale.md5sum)" ]]; then
+if [[ -f "$XDG_CONFIG_HOME/user-dirs.dirs.md5sum" ]]; then
+  if [[ "$(md5sum < "$REALHOME/.config/user-dirs.dirs")" != "$(cat "$XDG_CONFIG_HOME/user-dirs.dirs.md5sum")" ||
+        ( -f "$XDG_CONFIG_HOME/user-dirs.locale.md5sum" &&
+          "$(md5sum < "$REALHOME/.config/user-dirs.locale")" != "$(cat "$XDG_CONFIG_HOME/user-dirs.locale.md5sum")" ) ]]; then
     needs_update=true
   fi
 else
@@ -254,13 +255,19 @@ if [ "$HOME" != "$SNAP_USER_DATA" ] && ! is_subpath "$XDG_CONFIG_HOME" "$HOME"; 
   done
 fi
 
-if can_open_file "$REALHOME/.config/user-dirs.dirs" && can_open_file "$REALHOME/.config/user-dirs.locale"; then
-  if [ $needs_update = true ] || [ $needs_xdg_reload = true ]; then
-    sed /^#/!s#\$HOME#${REALHOME}#g $REALHOME/.config/user-dirs.dirs > $XDG_CONFIG_HOME/user-dirs.dirs
-    cp -a $REALHOME/.config/user-dirs.locale $XDG_CONFIG_HOME
-    for f in user-dirs.dirs user-dirs.locale; do
-      md5sum < $REALHOME/.config/$f > $XDG_CONFIG_HOME/$f.md5sum
-    done
+if can_open_file "$REALHOME/.config/user-dirs.dirs"; then
+  # shellcheck disable=SC2154
+  if [ "$needs_update" = true ] || [ "$needs_xdg_reload" = true ]; then
+    sed "/^#/!s#\$HOME#${REALHOME}#g" "$REALHOME/.config/user-dirs.dirs" > "$XDG_CONFIG_HOME/user-dirs.dirs"
+    md5sum < "$REALHOME/.config/user-dirs.dirs" > "$XDG_CONFIG_HOME/user-dirs.dirs.md5sum"
+    # It's possible user-dirs.dirs exists when user-dirs.locale doesn't. This
+    # simply means the user opted to never ask to translate their user dirs
+    if can_open_file "$REALHOME/.config/user-dirs.locale"; then
+      cp -a "$REALHOME/.config/user-dirs.locale" "$XDG_CONFIG_HOME"
+      md5sum < "$REALHOME/.config/user-dirs.locale" > "$XDG_CONFIG_HOME/user-dirs.locale.md5sum"
+    elif [ -f "$XDG_CONFIG_HOME/user-dirs.locale.md5sum" ]; then
+      rm "$XDG_CONFIG_HOME/user-dirs.locale.md5sum"
+    fi
     needs_xdg_reload=true
   fi
 else
@@ -482,7 +489,7 @@ append_dir LD_LIBRARY_PATH $SNAP/testability/$ARCH/mesa
 # Gdk-pixbuf loaders
 export GDK_PIXBUF_MODULE_FILE=$XDG_CACHE_HOME/gdk-pixbuf-loaders.cache
 export GDK_PIXBUF_MODULEDIR=$RUNTIME/usr/lib/$ARCH/gdk-pixbuf-2.0/2.10.0/loaders
-if [ $needs_update = true ]; then
+if [ $needs_update = true ] || [ ! -f $GDK_PIXBUF_MODULE_FILE ]; then
   rm -f $GDK_PIXBUF_MODULE_FILE
   if [ -f $RUNTIME/usr/lib/$ARCH/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders ]; then
     async_exec $RUNTIME/usr/lib/$ARCH/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders > $GDK_PIXBUF_MODULE_FILE
@@ -544,8 +551,3 @@ append_dir LD_LIBRARY_PATH $SNAP/usr/lib/$ARCH/gvfs
 [ $needs_update = true ] && echo "SNAP_DESKTOP_LAST_REVISION=$SNAP_REVISION" > $SNAP_USER_DATA/.last_revision
 
 wait_for_async_execs
-
-if [ -n "$SNAP_DESKTOP_DEBUG" ]; then
-  echo "desktop-launch elapsed time: " $(date +%s.%N --date="$START seconds ago") 
-  echo "Now running: exec $@"
-fi

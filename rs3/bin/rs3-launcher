@@ -27,12 +27,13 @@ server="http://www.runescape.com/k=5/l=\$\(Language:0\)/jav_config.ws"
 #This is the bootstrap file the launcher uses to setup the client.
 #It can be modified by the user to choose a specific world to launch every boot, if desired.
 
-latestLauncher="launcher-2.2.6"	#When a new launcher is available, increment this string and push a new revision, so that all existing clients will update to it.
+launcher=".launcher-2.2.7"	#When a new launcher is available, increment this string and push a new revision, so that all existing clients will update to it.
 
 networkError="Unable to connect to Jagex servers"
+genericDownloadError="It appears the download process has failed in an unexpected way. Please inform the maintainer via a Github issue!"
 
 function notify(){
-	xmessage -center -timeout 60 $1
+	xmessage -center -timeout 60 -title RuneScape $1
 }
 
 function DownloadRS3(){
@@ -42,43 +43,38 @@ function DownloadRS3(){
 	echo Importing Jagex Signing key
 	gpg --batch --import "$SNAP/runescape.gpg.key"	#Add the Jagex signing key to the GPG store. This will be isolated to this snap.
 
-	#Clear up previous runs
-	echo Clearing previous installers
-	rm -rf "$SNAP_USER_COMMON/runescape" "${SNAP_USER_COMMON:?}/usr" "$SNAP_USER_COMMON/Release" "$SNAP_USER_COMMON/Release.gpg" "$SNAP_USER_COMMON/Packages" "$SNAP_USER_COMMON/rs.deb"
-	#Delete any files left over from previous runs of this function, effectively making it stateless.
-
 	echo "Downloading RuneScape repository info"
-	wget "$repo"Release -O "$SNAP_USER_COMMON/Release"	#Contains information on the repository
+	wget "$repo"Release -O "/tmp/Release"	#Contains information on the repository
 
 	echo "Downloading RuneScape repository info signature"
-	wget "$repo"Release.gpg -O "$SNAP_USER_COMMON/Release.gpg"	#Signs the above information
+	wget "$repo"Release.gpg -O "/tmp/Release.gpg"	#Signs the above information
 
-	if ! gpg --batch --verify "$SNAP_USER_COMMON/Release.gpg" "$SNAP_USER_COMMON/Release"	#Check the validity of the above two files and error out if they don't match (Including if the network failed, I.E, empty files)
+	if ! gpg --batch --verify "/tmp/Release.gpg" "/tmp/Release"	#Check the validity of the above two files and error out if they don't match (Including if the network failed, I.E, empty files)
 	then
 		notify "$networkError"
 		exit 1
 	fi
 	echo "Repository metadata looks valid"
 	
-	packageFileHash=$(awk '/SHA256:/ {sha=1} ; sha == 1 && $NF == "non-free/binary-amd64/Packages" {print $1; exit}' "$SNAP_USER_COMMON/Release")	#Find the repository information for AMD64 packages/
+	packageFileHash=$(awk '/SHA256:/ {sha=1} ; sha == 1 && $NF == "non-free/binary-amd64/Packages" {print $1; exit}' "/tmp/Release")	#Find the repository information for AMD64 packages/
 
 	echo "Downloading repository package list"
-	wget "$repo"non-free/binary-amd64/Packages -O "$SNAP_USER_COMMON/Packages"
+	wget "$repo"non-free/binary-amd64/Packages -O "/tmp/Packages"
 
-	if [[ $packageFileHash != $(sha256sum "$SNAP_USER_COMMON/Packages" | cut -d " " -f 1) ]]	#Check the integrity again
+	if [[ $packageFileHash != $(sha256sum "/tmp/Packages" | cut -d " " -f 1) ]]	#Check the integrity again
 	then
 		notify "$networkError"
 		exit 1
 	fi
 	echo "Repository package list looks valid"
 
-	debFile=$(awk ' /Package: runescape-launcher/ {rs=true}; rs == true && /Filename:/ {print $2; exit}' $SNAP_USER_COMMON/Packages )	#Download the actual deb file containing the RS3 launcher
-	debHash=$(awk ' /Package: runescape-launcher/ {rs=true}; rs == true && /SHA256:/ {print $2; exit}' $SNAP_USER_COMMON/Packages)
+	debFile=$(awk ' /Package: runescape-launcher/ {rs=true}; rs == true && /Filename:/ {print $2; exit}' /tmp/Packages )	#Download the actual deb file containing the RS3 launcher
+	debHash=$(awk ' /Package: runescape-launcher/ {rs=true}; rs == true && /SHA256:/ {print $2; exit}' /tmp/Packages)
 
 	echo "Downloading RuneScape launcher"
-	wget "$repoRoot$debFile" -O "$SNAP_USER_COMMON/rs.deb"
+	wget "$repoRoot$debFile" -O "/tmp/rs.deb"
 
-	if [[ $debHash != $(sha256sum "$SNAP_USER_COMMON/rs.deb" | cut -d " " -f 1) ]]	#Check the integrity again!
+	if [[ $debHash != $(sha256sum "/tmp/rs.deb" | cut -d " " -f 1) ]]	#Check the integrity again!
 	then 
 		notify "$networkError"
 		exit 1
@@ -86,12 +82,8 @@ function DownloadRS3(){
 	echo "Launcher looks valid"
 
 	#Extract the files and put them into the right place
-	dpkg-deb -x "$SNAP_USER_COMMON/rs.deb" "$SNAP_USER_COMMON/"	#ar or 7z could also do this. Simly decompress the deb file.
-	mv "$SNAP_USER_COMMON/usr/share/games/runescape-launcher/runescape" "$SNAP_USER_COMMON/$latestLauncher"	#Move the launcher to where we'll be expecting it!
-
-	echo "Clearing up downloads"
-	rm -rf "${SNAP_USER_COMMON:?}/usr" "$SNAP_USER_COMMON/Release" "$SNAP_USER_COMMON/Release.gpg" "$SNAP_USER_COMMON/Packages" "$SNAP_USER_COMMON/rs.deb"
-	#Clear up temporary files
+	"$SNAP"/usr/lib/p7zip/7z x "/tmp/rs.deb" -o"/tmp/" -aoa
+	mv "/tmp/usr/share/games/runescape-launcher/runescape" "$SNAP_USER_COMMON/$launcher"	#Move the launcher to where we'll be expecting it!
 	
 }
 function SetupDirs(){
@@ -113,17 +105,23 @@ fi
 
 unset XMODIFIERS
 
-if [[ ! -f "$SNAP_USER_COMMON/$latestLauncher" ]]	#Check if the launcher needs updating
+if [[ ! -f "$SNAP_USER_COMMON/$launcher" ]]	#Check if the launcher needs updating
 then
 	echo "Launcher doesn't appear to exist, running setup!" 
 	DownloadRS3
 	SetupDirs
+	if [[ ! -f $SNAP_USER_COMMON/$launcher ]]
+	then
+		echo $genericDownloadError 	#General sanity checking; although this was a huge problem March 2020
+		notify "$genericDownloadError"
+		exit 1
+	fi
 fi
 
 #Execute game
 echo "Launching RuneScape"
 if [[ -z $@ ]]; then
-	$SNAP_USER_COMMON/$latestLauncher --configURI  $server	#Use the default configuration file
+	$SNAP_USER_COMMON/$launcher --configURI  $server	#Use the default configuration file
 else
-	$SNAP_USER_COMMON/$latestLauncher --configURI "$@"	#Use the configuration file passed via the CLI, usually a beta client
+	$SNAP_USER_COMMON/$launcher --configURI "$@"	#Use the configuration file passed via the CLI, usually a beta client
 fi

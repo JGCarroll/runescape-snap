@@ -10,18 +10,16 @@ Ensure snapd is installed. Snap is installed by default on most Ubuntu derivativ
 
 At a terminal, run
 
-`sudo snap install rslauncher`
+`sudo snap install runescape`
 
 ## Build Instructions
 The snap can be built on any Linux system with snapd installed.
 
 `sudo snap install snapcraft --classic`
 
-`sudo snap install multipass --classic`
-
 `snapcraft`
 
-`sudo snap install rslauncher_release.snap --dangerous`
+`sudo snap install runescape_release.snap --dangerous`
 
 The dangerous flag is required to install any snap package that lacks signature verification, such as those built locally. Sandboxing is unaffected.
 
@@ -33,13 +31,13 @@ The snap does not contain Jagex code, and will dynamically fetch this from the J
 
 Once installed, desktop icons should be available in your desktops standard start menu. You can also launch the game via the terminal. 
 
-`rslauncher.rs3`
+`runescape.rs3`
 
-`rslauncher.osrs`
+`runescape.osrs`
 
-`rslauncher.reset`
+`runescape.reset`
 
-In the event environmental variables need to be passed to the game to modify it's behaviour in any capacity, users can place a bash script in the snaps directory. E.G, ~/snap/rslauncher/current/ called 
+In the event environmental variables need to be passed to the game to modify it's behaviour in any capacity, users can place a bash script in the snaps directory. E.G, ~/snap/runescape/current/ called 
 
 `osrs-user-config`
  
@@ -48,4 +46,4 @@ In the event environmental variables need to be passed to the game to modify it'
 which will be automatically loaded prior to the game if present. This allows for adding environmental variables to the games without having to mess with any root owned files or desktop entries.
 Particularly, exports (such as Mesa debug environmental variables) and parameters for the game client, can be added, for example.
 
-`echo "export PULSE_LATENCY_MSEC=100" > ~/snap/rslauncher/current/rs3-user-config`
+`echo "export PULSE_LATENCY_MSEC=100" > ~/snap/runescape/current/rs3-user-config`
