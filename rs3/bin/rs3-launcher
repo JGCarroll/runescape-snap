@@ -82,8 +82,10 @@ function DownloadRS3(){
 	echo "Launcher looks valid"
 
 	#Extract the files and put them into the right place
-	"$SNAP"/usr/lib/p7zip/7z x "/tmp/rs.deb" -o"/tmp/" -aoa
+	"$SNAP"/usr/lib/p7zip/7z x "/tmp/rs.deb" -o"/tmp/data.tar" -aoa
+	"$SNAP"/usr/lib/p7zip/7z x "/tmp/data.tar" -o"/tmp/" -aoa
 	mv "/tmp/usr/share/games/runescape-launcher/runescape" "$SNAP_USER_COMMON/$launcher"	#Move the launcher to where we'll be expecting it!
+	chmod +x "$SNAP_USER_COMMON/$launcher"
 	
 }
 function SetupDirs(){
