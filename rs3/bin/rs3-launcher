@@ -32,6 +32,13 @@ function notify(){
 	xmessage -center -timeout 60 -title RuneScape $1
 }
 
+if [[ $SNAP_ARCH != amd64 ]]	#Check the game isn't being run on none AMD64 systems, E.G, Raspberry Pi.
+then
+	notify "RS3 is not supported on this CPU Architecture"
+	echo "RS3 is not supported on this CPU Architecture"
+	exit 1
+fi
+
 function DownloadRS3(){
 	repoRoot="http://content.runescape.com/downloads/ubuntu/"	#The Jagex APT repo
 	repo="http://content.runescape.com/downloads/ubuntu/dists/trusty/"	#The distribution the APT repo provides for. (Although it mentions Trusty, there's no actual requirement Trusty be used)

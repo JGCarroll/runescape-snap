@@ -75,4 +75,4 @@ then
 fi
 
 echo "Launching OSRS"
-"$SNAP/usr/lib/jvm/java-11-openjdk-amd64/bin/java" -Duser.home="$SNAP_USER_COMMON" -Djava.system.class.loader=app.systemclassloader -Dcom.jagex.config=$server -Xmx512m -cp "$SNAP_USER_COMMON/$launcher" jagexappletviewer "."
+"$SNAP/usr/lib/jvm/default-java/bin/java" -Duser.home="$SNAP_USER_COMMON" -Djava.system.class.loader=app.systemclassloader -Dcom.jagex.config=$server -Xmx512m -cp "$SNAP_USER_COMMON/$launcher" jagexappletviewer "."
