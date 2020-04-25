@@ -551,3 +551,5 @@ append_dir LD_LIBRARY_PATH $SNAP/usr/lib/$ARCH/gvfs
 [ $needs_update = true ] && echo "SNAP_DESKTOP_LAST_REVISION=$SNAP_REVISION" > $SNAP_USER_DATA/.last_revision
 
 wait_for_async_execs
+
+exec "$@"

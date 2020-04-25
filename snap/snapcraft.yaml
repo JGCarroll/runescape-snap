@@ -12,6 +12,7 @@ confinement: strict
 license: MIT
 assumes: 
   - snapd2.41
+  - command-chain
 
 parts:
   rs3-gpg:
@@ -79,6 +80,8 @@ apps:
       PULSE_LATENCY_MSEC: 150
       PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3.png' media.role='game'
       SDL_VIDEO_X11_WMCLASS: RuneScape
+    command-chain:
+      - bin/setup-sandbox
 
   osrs:
     command: bin/osrs-launcher
@@ -95,6 +98,8 @@ apps:
     environment:
       PULSE_PROP_OVERRIDE: application.name='Old School RuneScape' application.icon_name='osrs.png' media.role='game'
       ALSA_CONFIG_PATH: $SNAP/etc/asound.conf
+    command-chain: 
+      - bin/setup-sandbox
 
   reset:
     command: reset-cache
