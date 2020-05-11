@@ -19,7 +19,7 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
-server="http://www.runescape.com/k=5/l=\$\(Language:0\)/jav_config.ws"
+server=http://www.runescape.com/k=5/l=\$\(Language:0\)/jav_config.ws	#Intentionally lacking quotation marks
 #This is the bootstrap file the launcher uses to setup the client.
 #It can be modified by the user to choose a specific world to launch every boot, if desired.
 
