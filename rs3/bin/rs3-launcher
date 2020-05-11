@@ -19,7 +19,9 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
-server=http://www.runescape.com/k=5/l=\$\(Language:0\)/jav_config.ws	#Intentionally lacking quotation marks
+
+# shellcheck disable=SC2016
+server='http://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws'
 #This is the bootstrap file the launcher uses to setup the client.
 #It can be modified by the user to choose a specific world to launch every boot, if desired.
 
@@ -29,7 +31,7 @@ networkError="Unable to connect to Jagex servers"
 genericDownloadError="It appears the download process has failed in an unexpected way. Please inform the maintainer via a Github issue!"
 
 function notify(){
-	xmessage -center -timeout 60 -title RuneScape $1
+	xmessage -center -timeout 60 -title RuneScape "$*"
 }
 
 if [[ $SNAP_ARCH != amd64 ]]	#Check the game isn't being run on none AMD64 systems, E.G, Raspberry Pi.
@@ -52,7 +54,7 @@ function DownloadRS3(){
 	echo "Downloading RuneScape repository info signature"
 	wget "$repo"Release.gpg -O "/tmp/Release.gpg"	#Signs the above information
 
-	if ! gpg --batch --verify "/tmp/Release.gpg" "/tmp/Release"	#Check the validity of the above two files and error out if they don't match (Including if the network failed, I.E, empty files)
+	if ! gpg --batch --verify "/tmp/Release.gpg" "/tmp/Release"	#Check the validity of the above two files and error out if they don't match (Including if the network failed, E.G, empty files, corruption, )
 	then
 		notify "$networkError"
 		exit 1
@@ -101,6 +103,7 @@ function SetupDirs(){
 	echo user_folder="$SNAP_USER_COMMON"/rs3cache/ >> "$SNAP_USER_DATA/Jagex/launcher/preferences.cfg"
 }
 
+# shellcheck disable=SC1090
 if [[ -f "$SNAP_USER_DATA/rs3-user-config" ]]
 then
         echo "Found RS3 config"
@@ -115,9 +118,9 @@ then
 	echo "Launcher doesn't appear to exist, running setup!" 
 	DownloadRS3
 	SetupDirs
-	if [[ ! -f $SNAP_USER_COMMON/$launcher ]]
+	if [[ ! -f "$SNAP_USER_COMMON/$launcher" ]]
 	then
-		echo $genericDownloadError 	#General sanity checking; although this was a huge problem March 2020
+		echo "$genericDownloadError" 	#General sanity checking; although this was a huge problem March 2020
 		notify "$genericDownloadError"
 		exit 1
 	fi
@@ -125,8 +128,8 @@ fi
 
 #Execute game
 echo "Launching RuneScape"
-if [[ -z $@ ]]; then
-	$SNAP_USER_COMMON/$launcher --configURI  $server	#Use the default configuration file
+if [[ -z $* ]]; then
+	"$SNAP_USER_COMMON/$launcher" --configURI  $server	#Use the default configuration file
 else
-	$SNAP_USER_COMMON/$launcher --configURI "$@"	#Use the configuration file passed via the CLI, usually a beta client
+	"$SNAP_USER_COMMON/$launcher" --configURI "$@"	#Use the configuration file passed via the CLI, usually a beta client
 fi

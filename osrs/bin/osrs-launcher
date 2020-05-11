@@ -30,7 +30,7 @@ genericDownloadError="It appears the download process has failed in an unexpecte
 
 
 function notify(){
-        xmessage -center -timeout 60 -title RuneScape $1
+        xmessage -center -timeout 60 -title RuneScape "$*"
 }
 
 
@@ -54,6 +54,7 @@ DownloadOSRS(){
 	cp "/tmp/osrs-dmg/Old School RuneScape/Old School RuneScape.app/Contents/Java/jagexappletviewer.jar" "$SNAP_USER_COMMON/$launcher"	#Put the applet viewer where its expected.
 }
 
+# shellcheck disable=SC1090
 if [[ -f "$SNAP_USER_DATA/osrs-user-config" ]]
 then
 	echo "Found OSRS config"
@@ -61,14 +62,13 @@ then
 	echo "Finished reading OSRS config"
 fi
 
-
 if [[ ! -f "$SNAP_USER_COMMON/$launcher" ]]	#Check if the launcher needs updating
 then
 	echo "Launcher doesn't appear to exist, running setup!"
 	DownloadOSRS
 	if [[ ! -f $SNAP_USER_COMMON/$launcher ]]
 	then
-		echo $genericDownloadError 	#General sanity checking; although this was a huge problem March 2020 for RS3
+		echo "$genericDownloadError" 	#General sanity checking; although this was a huge problem March 2020 for RS3
 		notify "$genericDownloadError"
 		exit 1
 	fi
