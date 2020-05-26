@@ -49,6 +49,7 @@ parts:
       - libasound2-plugins
       - gvfs
       - p7zip-full
+      - libglu1-mesa
     build-packages:
       - ca-certificates
       - ca-certificates-java
