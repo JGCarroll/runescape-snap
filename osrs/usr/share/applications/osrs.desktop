@@ -5,3 +5,4 @@ Exec=osrs-launcher
 Icon=usr/share/pixmaps/osrs.png
 Type=Application
 Categories=Game;
+PrefersNonDefaultGPU=true
