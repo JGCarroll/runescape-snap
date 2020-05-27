@@ -11,7 +11,6 @@ grade: stable
 confinement: strict
 license: MIT
 assumes: 
-  - snapd2.41
   - command-chain
 
 parts:
@@ -77,6 +76,7 @@ apps:
       - wayland
       - opengl
       - gsettings
+      - pulseaudio
     environment:
       PULSE_LATENCY_MSEC: 150
       PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3.png' media.role='game'
@@ -96,6 +96,7 @@ apps:
       - wayland
       - opengl
       - gsettings
+      - pulseaudio
     environment:
       PULSE_PROP_OVERRIDE: application.name='Old School RuneScape' application.icon_name='osrs.png' media.role='game'
       ALSA_CONFIG_PATH: $SNAP/etc/asound.conf
