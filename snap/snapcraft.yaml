@@ -12,6 +12,8 @@ confinement: strict
 license: MIT
 assumes: 
   - command-chain
+architectures:
+  - build-on: amd64
 
 parts:
   rs3-gpg:
