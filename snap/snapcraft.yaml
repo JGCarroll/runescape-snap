@@ -21,6 +21,8 @@ parts:
     source: .
     override-pull: 
       wget https://content.runescape.com/downloads/ubuntu/runescape.gpg.key -O $SNAPCRAFT_PART_SRC/runescape.gpg.key
+    build-packages:
+      - wget
   
   rs3:
     plugin: dump
