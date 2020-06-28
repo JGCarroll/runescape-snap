@@ -85,6 +85,7 @@ apps:
       PULSE_LATENCY_MSEC: 150
       PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3.png' media.role='game'
       SDL_VIDEO_X11_WMCLASS: RuneScape
+      SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS: 0
     command-chain:
       - bin/setup-sandbox
 
