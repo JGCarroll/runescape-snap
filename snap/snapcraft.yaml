@@ -39,6 +39,7 @@ parts:
       - libglu1-mesa
       - gnupg
       - wget
+      - p7zip-full
 
   osrs:
     plugin: dump
