@@ -20,13 +20,15 @@
 #SOFTWARE.
 
 server="http://oldschool.runescape.com/jav_config.ws"	
-#This is the bootstrap file the launcher uses to setup the client.
-#It can be modified by the user to choose a specific world to launch every boot, if desired.
+# This is the bootstrap file the launcher uses to setup the client.
+# It can be modified by the user to choose a specific world to launch every boot, if desired.
 
 networkError="Unable to connect to Jagex servers"
-fileError="Jagex server provided an unexpected file, please report this on the rslauncher github repo"
-launcher=".os-1.jar"	#When a new launcher is available, increment this string and push a new revision, so that all existing clients will update to it.
-genericDownloadError="It appears the download process has failed in an unexpected way. Please inform the maintainer via a Github issue!"
+fileError="The download process has failed unexpectedly. Please raise a Github issue, as this is likely a serious fault. (Unknown file format)"
+launcher=".os-1.jar"	# When a new launcher is available, increment this string and push a new revision, so that all existing clients will update to it.
+			# The exact string has no significance, as long as it is unique. This does mean newer launchers might have older names if the upstream version changes.
+			# Whether the variable needs changing in any given scenario requires manual assessment.
+genericDownloadError="The download process has failed unexpectedly. Please raise a Github issue, as this is likely a serious fault."
 
 
 function notify(){
@@ -38,71 +40,69 @@ function notify(){
 DownloadOSRS(){
 	echo Downloading OSRS package
 
-	#Check the connection succeeds. Since this is HTTPS, the DMG file is transparently checked for validity.
-	#A direct download to jagexappletviewer.jar is available but intentionally not used.
+	# Check the connection succeeds. Since this uses HTTPS, the DMG file is transparently checked for validity.
 	if ! wget "https://www.runescape.com/downloads/OldSchool.dmg" -O "/tmp/osrs.dmg"	
 	then 
 		echo "Failed to get osrs.dmg"
 		notify "$networkError"
 		exit 1
 	fi
-	if ! "$SNAP"/usr/lib/p7zip/7z x "/tmp/osrs.dmg" -o"/tmp/osrs-dmg/" -aoa	#Extract the DMG. Non-success is likely due to the DMG file being upgraded to APFS over HFS+.
+	if ! "${SNAP}/usr/lib/p7zip/7z" x "/tmp/osrs.dmg" -o"/tmp/osrs-dmg/" -aoa	# Extract the DMG. Non-success is likely due to the DMG file being upgraded to APFS over HFS+.
 	then
 		notify "$fileError"
 		exit 1
 	fi
-	cp "/tmp/osrs-dmg/Old School RuneScape/Old School RuneScape.app/Contents/Java/jagexappletviewer.jar" "$SNAP_USER_COMMON/$launcher"	#Put the applet viewer where its expected.
+	cp "/tmp/osrs-dmg/Old School RuneScape/Old School RuneScape.app/Contents/Java/jagexappletviewer.jar" "${SNAP_USER_COMMON}/${launcher}"
 }
 
 # shellcheck disable=SC1090
-if [[ -f "$SNAP_USER_DATA/osrs-user-config" ]]
+if [[ -f "${SNAP_USER_DATA}/osrs-user-config" ]]
 then
-	echo "Found OSRS config"
-	source "$SNAP_USER_DATA/osrs-user-config"	#User can add exports/vars, such as changing $server, adding Java overrides, etc.
-	echo "Finished reading OSRS config"
+	echo -e "\nExecuting osrs-user-config\n"
+	source "$SNAP_USER_DATA/osrs-user-config"	# User can add exports/vars, such as changing $server, adding Java overrides, etc.
+	echo -e "\nFinished executing osrs-user-config\n"
 fi
 
-if [[ ! -f "$SNAP_USER_COMMON/$launcher" ]]	#Check if the launcher needs updating
+if [[ ! -f "${SNAP_USER_COMMON}/${launcher}" ]]	# Check if the launcher needs updating
 then
-	echo "Launcher doesn't appear to exist, running setup!"
+	echo -e "\nCouldn't find Jagex launcher, grabbing a fresh copy\n"
 	DownloadOSRS
-	if [[ ! -f $SNAP_USER_COMMON/$launcher ]]
+	if [[ ! -f ${SNAP_USER_COMMON}/${launcher} ]]
 	then
-		echo "$genericDownloadError" 	#General sanity checking; although this was a huge problem March 2020 for RS3
-		notify "$genericDownloadError"
+		echo -e "\n${genericDownloadError}\n" 	# General consistency checking
+		notify "${genericDownloadError}"
 		exit 1
 	fi
 fi
 
 function PrintHelp(){
-	echo -e "\n"
-	echo -e "Accepted parameters: \n"
-	echo -e "-w <number> connect directly to a specific world \n"
-	echo "-h prints this message"
+	echo -e "\nAccepted parameters:\n"
+	echo -e "\n-w <number> connect to a specific world\n"
+	echo -e "\n-h prints this message\n"
 }
 
 while getopts ":w:h" opt; do
 	case ${opt} in
-		w )	# Connect to specific world
+		w )	# Connect to a specific world
+			echo -e "\nAttempting to connect directly to world ${OPTARG}"
 			server="http://oldschool${OPTARG}.runescape.com/k=5/l=0/jav_config.ws"
-			echo "Attempting to connect directly to world ${OPTARG}"
 			;;
 		h )	# Print help
 			PrintHelp
 			exit
 			;;
 		: )	# Missing parameter to option
-			echo "-${OPTARG} requires an parameter!"
+			echo -e "\n-${OPTARG} requires an parameter!"
 			PrintHelp
 			exit 2;
 			;;
 		\? )	# Unknown option
-			echo "Unknown arguement ${OPTARG}"
+			echo -e "\nUnknown arguement ${OPTARG}"
 			PrintHelp
 			exit 2;
 			;;
 	esac
 done
 
-echo "Launching OSRS"
-"$SNAP/usr/lib/jvm/default-java/bin/java" -Duser.home="$SNAP_USER_COMMON" -Djava.system.class.loader=app.systemclassloader -Dcom.jagex.config=$server -Xmx512m -cp "$SNAP_USER_COMMON/$launcher" jagexappletviewer "."
+echo -e "\nLaunching OSRS\n"
+"${SNAP}/usr/lib/jvm/default-java/bin/java" -Duser.home="${SNAP_USER_COMMON}" -Djava.system.class.loader=app.systemclassloader -Dcom.jagex.config="${server}" -Xmx512m -cp "${SNAP_USER_COMMON}/${launcher}" jagexappletviewer "."

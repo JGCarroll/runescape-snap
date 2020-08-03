@@ -22,154 +22,158 @@
 
 # shellcheck disable=SC2016
 server='http://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws'
-#This is the bootstrap file the launcher uses to setup the client.
-#It can be modified by the user to choose a specific world to launch every boot, if desired.
+# This is the bootstrap file the launcher uses to setup the client.
+# It can be modified by the user to choose a specific world to launch every boot, if desired.
 
-launcher=".launcher-2.2.7"	#When a new launcher is available, increment this string and push a new revision, so that all existing clients will update to it.
+launcher=".launcher-2.2.7"	# When a new launcher is available, increment this string and push a new revision, so that all existing clients will update to it.
+				# The exact string has no significance, as long as it is unique. This does mean newer launchers might have older names if the upstream version changes.
+				# Whether the variable needs changing in any given scenario requires manual assessment.
 
-networkError="Unable to connect to Jagex servers"
-genericDownloadError="It appears the download process has failed in an unexpected way. Please inform the maintainer via a Github issue!"
+networkError="Unable to connect to Jagex servers."
+genericDownloadError="The download process has failed unexpectedly. Please raise a Github issue, as this is likely a serious fault."
 
 function notify(){
 	xmessage -center -timeout 60 -title RuneScape "$*"
 }
 
-if [[ $SNAP_ARCH != amd64 ]]	#Check the game isn't being run on none AMD64 systems, E.G, Raspberry Pi.
+if [[ $SNAP_ARCH != "amd64" ]]	# Check the game isn't being run on none AMD64 systems, E.G, Raspberry Pi.
 then
-	notify "RS3 is not supported on this CPU Architecture"
-	echo "RS3 is not supported on this CPU Architecture"
+	notify "RS3 is not supported on this CPU architecture"
+	echo "RS3 is not supported on this CPU architecture"
 	exit 1
 fi
 
 function DownloadRS3(){
-	repoRoot="http://content.runescape.com/downloads/ubuntu/"	#The Jagex APT repo
-	repo="http://content.runescape.com/downloads/ubuntu/dists/trusty/"	#The distribution the APT repo provides for. (Although it mentions Trusty, there's no actual requirement Trusty be used)
+	repoRoot="http://content.runescape.com/downloads/ubuntu/"	# The Jagex APT repo
+	repo="http://content.runescape.com/downloads/ubuntu/dists/trusty/"	# The distribution the APT repo provides for. (Although it mentions Trusty, there's no actual requirement Trusty be used)
 
-	echo Importing Jagex Signing key
-	gpg --batch --import "$SNAP/runescape.gpg.key"	#Add the Jagex signing key to the GPG store. This will be isolated to this snap.
+	echo "Importing Jagex Signing key"
+	gpg --batch --import "${SNAP}/runescape.gpg.key"	# Add the Jagex signing key to the GPG store. This will be isolated to this snap.
 
 	echo "Downloading RuneScape repository info"
-	wget "$repo"Release -O "/tmp/Release"	#Contains information on the repository
+	wget "${repo}Release" -O "/tmp/Release"	# Contains information on the repository
 
 	echo "Downloading RuneScape repository info signature"
-	wget "$repo"Release.gpg -O "/tmp/Release.gpg"	#Signs the above information
+	wget "${repo}Release.gpg" -O "/tmp/Release.gpg"	# Signs the above information
 
-	if ! gpg --batch --verify "/tmp/Release.gpg" "/tmp/Release"	#Check the validity of the above two files and error out if they don't match (Including if the network failed, E.G, empty files, corruption, )
+	if ! gpg --batch --verify "/tmp/Release.gpg" "/tmp/Release"	# Check the validity of the above two files and error out if they don't match (Including if the network failed, E.G, empty files, corruption, )
 	then
-		notify "$networkError"
+		echo -e "\n${networkError}\n"
+		notify "${networkError}"
 		exit 1
 	fi
-	echo "Repository metadata looks valid"
+	echo -e "\nRepository metadata successfully verified by GPG key\n"
 	
-	packageFileHash=$(awk '/SHA256:/ {sha=1} ; sha == 1 && $NF == "non-free/binary-amd64/Packages" {print $1; exit}' "/tmp/Release")	#Find the repository information for AMD64 packages/
+	packageFileHash=$(awk '/SHA256:/ {sha=1} ; sha == 1 && $NF == "non-free/binary-amd64/Packages" {print $1; exit}' "/tmp/Release")	# Find the repository information for AMD64 packages
 
-	echo "Downloading repository package list"
-	wget "$repo"non-free/binary-amd64/Packages -O "/tmp/Packages"
+	echo -e "\nDownloading repository package list\n"
+	wget "${repo}non-free/binary-amd64/Packages" -O "/tmp/Packages"
 
-	if [[ $packageFileHash != $(sha256sum "/tmp/Packages" | cut -d " " -f 1) ]]	#Check the integrity again
+	if [[ $packageFileHash != $(sha256sum "/tmp/Packages" | cut -d " " -f 1) ]]	# Check the integrity again
 	then
-		notify "$networkError"
+		echo -e "\n${networkError}\n"
+		notify "${networkError}"
 		exit 1
 	fi
 	echo "Repository package list looks valid"
 
-	debFile=$(awk ' /Package: runescape-launcher/ {rs=true}; rs == true && /Filename:/ {print $2; exit}' /tmp/Packages )	#Download the actual deb file containing the RS3 launcher
+	debFile=$(awk ' /Package: runescape-launcher/ {rs=true}; rs == true && /Filename:/ {print $2; exit}' /tmp/Packages )	# Download the file containing the RS3 launcher
 	debHash=$(awk ' /Package: runescape-launcher/ {rs=true}; rs == true && /SHA256:/ {print $2; exit}' /tmp/Packages)
 
-	echo "Downloading RuneScape launcher"
-	wget "$repoRoot$debFile" -O "/tmp/rs.deb"
+	echo -e "\nDownloading RuneScape launcher\n"
+	wget "${repoRoot}${debFile}" -O "/tmp/rs.deb"
 
-	if [[ $debHash != $(sha256sum "/tmp/rs.deb" | cut -d " " -f 1) ]]	#Check the integrity again!
+	if [[ $debHash != $(sha256sum "/tmp/rs.deb" | cut -d " " -f 1) ]]	# Check the integrity again!
 	then 
-		notify "$networkError"
+		echo -e "\n${networkError}\n"
+		notify "${networkError}"
 		exit 1
 	fi
-	echo "Launcher looks valid"
+	echo -e "\nLauncher successfully verified by GPG key\n"
 
 	#Extract the files and put them into the right place
-	"$SNAP"/usr/lib/p7zip/7z x "/tmp/rs.deb" -o"/tmp/data.tar" -aoa
-	"$SNAP"/usr/lib/p7zip/7z x "/tmp/data.tar" -o"/tmp/" -aoa
-	mv "/tmp/usr/share/games/runescape-launcher/runescape" "$SNAP_USER_COMMON/$launcher"	#Move the launcher to where we'll be expecting it!
-	chmod +x "$SNAP_USER_COMMON/$launcher"
+	"${SNAP}/usr/lib/p7zip/7z" x "/tmp/rs.deb" -o"/tmp/data.tar" -aoa
+	"${SNAP}/usr/lib/p7zip/7z" x "/tmp/data.tar" -o"/tmp/" -aoa
+	mv "/tmp/usr/share/games/runescape-launcher/runescape" "${SNAP_USER_COMMON}/${launcher}"
+	chmod +x "${SNAP_USER_COMMON}/${launcher}"
 	
 }
 function SetupDirs(){
-	echo "Directing cache to $SNAP_USER_COMMON"
-	#Set up the cache location to exist in $SNAP_USER_COMMON rather than $HOME, preventing disk waste on upgrades when $HOME is snapshot.
-	#Additionally if this isn't set, snap revision updates will break RS3!
-	mkdir "$SNAP_USER_COMMON/rs3cache/" -p
-	mkdir "$SNAP_USER_DATA/Jagex/launcher/" -p
-	echo cache_folder="$SNAP_USER_COMMON"/rs3cache/ > "$SNAP_USER_DATA/Jagex/launcher/preferences.cfg"
-	echo user_folder="$SNAP_USER_COMMON"/rs3cache/ >> "$SNAP_USER_DATA/Jagex/launcher/preferences.cfg"
+	echo "Setting RS3 cache location to ${SNAP_USER_COMMON}"
+	# Set up the cache location to exist in $SNAP_USER_COMMON rather than $HOME, preventing disk waste on upgrades when $HOME is snapshot.
+	# Additionally if this isn't set, snap revision updates will break RS3!
+	mkdir "${SNAP_USER_COMMON}/rs3cache/" -p
+	mkdir "${SNAP_USER_DATA}/Jagex/launcher/" -p
+	echo cache_folder="${SNAP_USER_COMMON}/rs3cache/" > "${SNAP_USER_DATA}/Jagex/launcher/preferences.cfg"
+	echo user_folder="${SNAP_USER_COMMON}/rs3cache/" >> "${SNAP_USER_DATA}/Jagex/launcher/preferences.cfg"
 }
 
 # shellcheck disable=SC1090
-if [[ -f "$SNAP_USER_DATA/rs3-user-config" ]]
+if [[ -f "${SNAP_USER_DATA}/rs3-user-config" ]]
 then
-        echo "Found RS3 config"
-        source "$SNAP_USER_DATA/rs3-user-config"	#User can add exports/vars, such as changing $server, adding Mesa overrides, etc.
-        echo "Finished reading RS3 config"
+        echo -e "\nExecuting rs3-user-config\n"
+        source "${SNAP_USER_DATA}/rs3-user-config"	# User can add exports/vars, such as changing $server, adding Mesa overrides, etc.
+        echo -e "\nFinished executing rs3-user-config\n"
 fi
 
 unset XMODIFIERS
 
-if [[ ! -f "$SNAP_USER_COMMON/$launcher" ]]	#Check if the launcher needs updating
+if [[ ! -f "$SNAP_USER_COMMON/$launcher" ]]	# Check if the launcher needs updating
 then
-	echo "Launcher doesn't appear to exist, running setup!" 
+	echo -e "\nCouldn't find Jagex launcher, grabbing a fresh copy\n" 
 	DownloadRS3
 	SetupDirs
-	if [[ ! -f "$SNAP_USER_COMMON/$launcher" ]]
+	if [[ ! -f "${SNAP_USER_COMMON}/$launcher" ]]
 	then
-		echo "$genericDownloadError" 	#General sanity checking; although this was a huge problem March 2020
-		notify "$genericDownloadError"
+		echo "${genericDownloadError}" 	# General consistency checking
+		notify "${genericDownloadError}"
 		exit 1
 	fi
 fi
 
 function PrintHelp(){
-	echo -e "\n"
-	echo -e "Accepted parameters: \n"
-	echo "-b attempts to execute any live beta clients/worlds"
-	echo -e "\t do not use with -w \n"
-	echo "-w <number> connect directly to a specific world"
-	echo -e "\t do not use with -b \n"
-	echo "-p <number> override the default Pulseaudio latency value. This may aid with audio glitching"
-	echo -e "\t Do not use with -a \n"
-	echo "-a force the ALSA backend for audio. As this is a snap, it'll still proxy through Pulseaudio, but may help audio glitching"
-	echo -e "\t do not use with -p \n"
-	echo -e "-l lower reported OpenGL profile, may fix graphical glitches particularly on older GPU's \n"
-	echo "-h prints this message"
+	echo -e "\nAccepted parameters:"
+	echo -e "\n-b attempt to run the active beta client, if one exists"
+	echo -e "\t do not use with -w"
+	echo -e "\n-w <number> connect to a specific world"
+	echo -e "\t do not use with -b"
+	echo -e "\n-p <number> Set the Pulseaudio latency value. This may aid with audio glitching"
+	echo -e "\t do not use with -a"
+	echo -e "\n-a use the ALSA backend for audio. As this is a snap, it'll still proxy through Pulseaudio, but may help with audio glitching"
+	echo -e "\t do not use with -p"
+	echo -e "\n-l lower the reported OpenGL profile, this may fix graphical glitches, particularly on older GPU's"
+	echo -e "\n-h prints this message"
 }
 
 while getopts ":w:bp:salh" opt; do
 	case ${opt} in
-	b )	# Run beta engine
+	b )	# Attempt to run the beta engine
+		echo -e "\n-b detected, attempting to fetch beta client"
 		server='http://www.runescape.com/k=5/l=0/jav_config_beta.ws'
-		echo "-b detected, attempting to login to beta worlds"
 		;;
-	w )	# Connect to specific world
+	w )	# Connect to a specific world
+		echo -e "\n-w detected, attempting to connect to world ${OPTARG}"
 		server="http://world${OPTARG}.runescape.com/k=5/l=\$(Language:0)/jav_config.ws"
-		echo "-w detected, attempting to login to world ${OPTARG}"
 		;;
 	p )	# Pulseaudio latency
+		echo -e "\nSet Pulseaudio latency to ${OPTARG} (ms)"
+		echo "The optimum value for this varies from computer to computer, and may not consistently work."
 		export PULSE_LATENCY_MSEC=${OPTARG}
-		echo "Set Pulseaudio latency to ${OPTARG} (ms)"
-		echo "The optimum value for this varies from computer to computer"
 		;;
 	s )	# Software GPU rendering for debugging GPU drivers
-		echo "WARNING; -s detected, running OpenGL on the CPU"
+		echo -e "\nWARNING; -s detected, running OpenGL on the CPU"
 		echo "Unless you have a supercomputer, this will have nearly unplayable FPS"
 		echo "This may not have any effect when using proprietary / none MESA GPU drivers"
 		export LIBGL_ALWAYS_SOFTWARE=1
 		;;
 	a )	# ALSA backend for debugging audio
-		echo "Using ALSA backend, please note; this will probably still proxy through Pulseaudio"
+		echo -e "\nUsing ALSA backend, please note this will still probably proxy through Pulseaudio due to snapd design"
 		export SDL_AUDIODRIVER=alsa
 		export PULSE_LATENCY_MSEC=""
 		export ALSA_CONFIG_PATH=${SNAP}/etc/asound.conf
 		;;
 	l )	# Legacy GPU support
-		echo "-l detected, lowering reported OpenGL compatibility values"
+		echo -e "\n-l detected, lowering reported OpenGL compatibility values"
 		echo "This may not have any effect when using proprietary/ none MESA GPU drivers"
 		export export MESA_GL_VERSION_OVERRIDE='2.0'
 		export MESA_GLSL_VERSION_OVERRIDE='130'
@@ -179,12 +183,12 @@ while getopts ":w:bp:salh" opt; do
 		exit
 		;;
 	\? )	# Unknown option
-		echo "Unknown options have been provided"
+		echo -e "\nUnknown option: ${OPTARG}"
 		PrintHelp
 		exit 2
 		;;
 	: )	# Missing arguement to an option
-		echo "${OPTARG} requires a parameter"
+		echo -e "\n${OPTARG} requires a parameter"
 		PrintHelp
 		exit 2
 		;;
@@ -192,5 +196,5 @@ while getopts ":w:bp:salh" opt; do
 done
 
 #Execute game
-echo "Launching RuneScape"
-"$SNAP_USER_COMMON/$launcher" --configURI  $server
+echo -e "\nLaunching RuneScape\n"
+"${SNAP_USER_COMMON}/${launcher}" --configURI  "${server}"
