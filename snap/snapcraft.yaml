@@ -111,6 +111,3 @@ apps:
 
   reset:
     command: reset-cache
-
-  sources:
-    command: list-sources

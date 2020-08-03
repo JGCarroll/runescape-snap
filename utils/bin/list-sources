@@ -1,6 +1,0 @@
-#!/bin/bash
-
-echo This snap contains several dependencies of which have various different licenses
-echo Feel free to take a look at https://github.com/MrCarroll/runescape-snap for the source code of the snap itself.
-echo For the binaries which the snap bundles, you can find the sources and binaries at https://packages.ubuntu.com/
-echo You can find a list of the packages used in this package and their licenses at "$SNAP"/usr/share/doc
