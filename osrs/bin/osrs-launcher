@@ -74,5 +74,35 @@ then
 	fi
 fi
 
+function PrintHelp(){
+	echo -e "\n"
+	echo -e "Accepted parameters: \n"
+	echo -e "-w <number> connect directly to a specific world \n"
+	echo "-h prints this message"
+}
+
+while getopts ":w:h" opt; do
+	case ${opt} in
+		w )	# Connect to specific world
+			server="http://oldschool${OPTARG}.runescape.com/k=5/l=0/jav_config.ws"
+			echo "Attempting to connect directly to world ${OPTARG}"
+			;;
+		h )	# Print help
+			PrintHelp
+			exit
+			;;
+		: )	# Missing parameter to option
+			echo "-${OPTARG} requires an parameter!"
+			PrintHelp
+			exit 2;
+			;;
+		\? )	# Unknown option
+			echo "Unknown arguement ${OPTARG}"
+			PrintHelp
+			exit 2;
+			;;
+	esac
+done
+
 echo "Launching OSRS"
 "$SNAP/usr/lib/jvm/default-java/bin/java" -Duser.home="$SNAP_USER_COMMON" -Djava.system.class.loader=app.systemclassloader -Dcom.jagex.config=$server -Xmx512m -cp "$SNAP_USER_COMMON/$launcher" jagexappletviewer "."

@@ -126,10 +126,71 @@ then
 	fi
 fi
 
+function PrintHelp(){
+	echo -e "\n"
+	echo -e "Accepted parameters: \n"
+	echo "-b attempts to execute any live beta clients/worlds"
+	echo -e "\t do not use with -w \n"
+	echo "-w <number> connect directly to a specific world"
+	echo -e "\t do not use with -b \n"
+	echo "-p <number> override the default Pulseaudio latency value. This may aid with audio glitching"
+	echo -e "\t Do not use with -a \n"
+	echo "-a force the ALSA backend for audio. As this is a snap, it'll still proxy through Pulseaudio, but may help audio glitching"
+	echo -e "\t do not use with -p \n"
+	echo -e "-l lower reported OpenGL profile, may fix graphical glitches particularly on older GPU's \n"
+	echo "-h prints this message"
+}
+
+while getopts ":w:bp:salh" opt; do
+	case ${opt} in
+	b )	# Run beta engine
+		server='http://www.runescape.com/k=5/l=0/jav_config_beta.ws'
+		echo "-b detected, attempting to login to beta worlds"
+		;;
+	w )	# Connect to specific world
+		server="http://world${OPTARG}.runescape.com/k=5/l=\$(Language:0)/jav_config.ws"
+		echo "-w detected, attempting to login to world ${OPTARG}"
+		;;
+	p )	# Pulseaudio latency
+		export PULSE_LATENCY_MSEC=${OPTARG}
+		echo "Set Pulseaudio latency to ${OPTARG} (ms)"
+		echo "The optimum value for this varies from computer to computer"
+		;;
+	s )	# Software GPU rendering for debugging GPU drivers
+		echo "WARNING; -s detected, running OpenGL on the CPU"
+		echo "Unless you have a supercomputer, this will have nearly unplayable FPS"
+		echo "This may not have any effect when using proprietary / none MESA GPU drivers"
+		export LIBGL_ALWAYS_SOFTWARE=1
+		;;
+	a )	# ALSA backend for debugging audio
+		echo "Using ALSA backend, please note; this will probably still proxy through Pulseaudio"
+		export SDL_AUDIODRIVER=alsa
+		export PULSE_LATENCY_MSEC=""
+		export ALSA_CONFIG_PATH=${SNAP}/etc/asound.conf
+		;;
+	l )	# Legacy GPU support
+		echo "-l detected, lowering reported OpenGL compatibility values"
+		echo "This may not have any effect when using proprietary/ none MESA GPU drivers"
+		export export MESA_GL_VERSION_OVERRIDE='2.0'
+		export MESA_GLSL_VERSION_OVERRIDE='130'
+		;;
+	h )	# Print help
+		PrintHelp
+		exit
+		;;
+	\? )	# Unknown option
+		echo "Unknown options have been provided"
+		PrintHelp
+		exit 2
+		;;
+	: )	# Missing arguement to an option
+		echo "${OPTARG} requires a parameter"
+		PrintHelp
+		exit 2
+		;;
+	esac
+done
+
 #Execute game
 echo "Launching RuneScape"
-if [[ -z $* ]]; then
-	"$SNAP_USER_COMMON/$launcher" --configURI  $server	#Use the default configuration file
-else
-	"$SNAP_USER_COMMON/$launcher" --configURI "$@"	#Use the configuration file passed via the CLI, usually a beta client
-fi
+"$SNAP_USER_COMMON/$launcher" --configURI  $server
