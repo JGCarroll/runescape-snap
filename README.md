@@ -1,4 +1,5 @@
 # RuneScape Snap
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/runescape)
 This repository contains the build file and wrappers necessary to run RuneScape and Oldschool RuneScape on Linux systems in a Snap container format.
 RuneScape 3 does provide official Linux support, but is limited in it's supported distributions.
 Old School RuneScape does not have any Linux specific installer, but is a Java based game and can be run with a Java runtime environment.
@@ -31,11 +32,11 @@ The snap does not contain Jagex code, and will dynamically fetch this from the J
 
 Once installed, desktop icons should be available in your desktops standard start menu. You can also launch the game via the terminal. 
 
-`runescape.rs3`
+`runescape.rs3` or `snap run runescape.rs3`
 
-`runescape.osrs`
+`runescape.osrs` or `snap run runescape.osrs`
 
-`runescape.reset`
+`runescape.reset` or `snap run runescape.reset`
 
 In the event environmental variables need to be passed to the game to modify it's behaviour in any capacity, users can place a bash script in the snaps directory. E.G, ~/snap/runescape/current/ called 
 
@@ -47,3 +48,5 @@ which will be automatically loaded prior to the game if present. This allows for
 Particularly, exports (such as Mesa debug environmental variables) and parameters for the game client, can be added, for example.
 
 `echo "export PULSE_LATENCY_MSEC=100" > ~/snap/runescape/current/rs3-user-config`
+
+Alternatively, users may pass the -h parameter ( E.G, `runescape.rs3 -h` ) to the launch scripts to see common overrides. These parameters will be preferred over any conflicting entries in the user-config files.
