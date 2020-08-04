@@ -26,8 +26,8 @@ server='http://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws'
 # It can be modified by the user to choose a specific world to launch every boot, if desired.
 
 launcher=".launcher-2.2.7"	# When a new launcher is available, increment this string and push a new revision, so that all existing clients will update to it.
-				# The exact string has no significance, as long as it is unique. This does mean newer launchers might have older names if the upstream version changes.
-				# Whether the variable needs changing in any given scenario requires manual assessment.
+# The exact string has no significance, as long as it is unique. This does mean newer launchers might have older names if the upstream version changes.
+# Whether the variable needs changing in any given scenario requires manual assessment.
 
 networkError="Unable to connect to Jagex servers."
 genericDownloadError="The download process has failed unexpectedly. Please raise a Github issue, as this is likely a serious fault."
@@ -39,7 +39,7 @@ function notify(){
 if [[ ${SNAP_ARCH} != "amd64" ]]	# Check the game isn't being run on none AMD64 systems, E.G, Raspberry Pi.
 then
 	notify "RS3 is not supported on this CPU architecture"
-	echo "RS3 is not supported on this CPU architecture"
+	echo -e "\nRS3 is not supported on this CPU architecture\n"
 	exit 1
 fi
 
@@ -47,13 +47,13 @@ function DownloadRS3(){
 	repoRoot="http://content.runescape.com/downloads/ubuntu/"	# The Jagex APT repo
 	repo="http://content.runescape.com/downloads/ubuntu/dists/trusty/"	# The distribution the APT repo provides for. (Although it mentions Trusty, there's no actual requirement Trusty be used)
 
-	echo "Importing Jagex Signing key"
+	echo -e "\nImporting Jagex Signing key\n"
 	gpg --batch --import "${SNAP}/runescape.gpg.key"	# Add the Jagex signing key to the GPG store. This will be isolated to this snap.
 
-	echo "Downloading RuneScape repository info"
+	echo -e "\nDownloading RuneScape repository info\n"
 	wget "${repo}Release" -O "/tmp/Release"	# Contains information on the repository
 
-	echo "Downloading RuneScape repository info signature"
+	echo -e "\nDownloading RuneScape repository info signature\n"
 	wget "${repo}Release.gpg" -O "/tmp/Release.gpg"	# Signs the above information
 
 	if ! gpg --batch --verify "/tmp/Release.gpg" "/tmp/Release"	# Check the validity of the above two files and error out if they don't match (Including if the network failed, E.G, empty files, corruption, )
@@ -163,7 +163,7 @@ while getopts ":w:bp:salh" opt; do
 	s )	# Software GPU rendering for debugging GPU drivers
 		echo -e "\nWARNING; -s detected, running OpenGL on the CPU"
 		echo "Unless you have a supercomputer, this will have nearly unplayable FPS"
-		echo "This may not have any effect when using proprietary / none MESA GPU drivers"
+		echo "This may not have any effect when using proprietary / none Mesa GPU drivers"
 		export LIBGL_ALWAYS_SOFTWARE=1
 		;;
 	a )	# ALSA backend for debugging audio
@@ -174,7 +174,7 @@ while getopts ":w:bp:salh" opt; do
 		;;
 	l )	# Legacy GPU support
 		echo -e "\n-l detected, lowering reported OpenGL compatibility values"
-		echo "This may not have any effect when using proprietary/ none MESA GPU drivers"
+		echo "This may not have any effect when using proprietary/ none Mesa GPU drivers"
 		export MESA_GL_VERSION_OVERRIDE='2.0'
 		export MESA_GLSL_VERSION_OVERRIDE='130'
 		;;
@@ -195,6 +195,6 @@ while getopts ":w:bp:salh" opt; do
 	esac
 done
 
-#Execute game
+# Execute game
 echo -e "\nLaunching RuneScape\n"
 "${SNAP_USER_COMMON}/${launcher}" --configURI  "${server}"

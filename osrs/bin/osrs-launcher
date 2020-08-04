@@ -25,9 +25,11 @@ server="http://oldschool.runescape.com/jav_config.ws"
 
 networkError="Unable to connect to Jagex servers"
 fileError="The download process has failed unexpectedly. Please raise a Github issue, as this is likely a serious fault. (Unknown file format)"
+
 launcher=".os-1.jar"	# When a new launcher is available, increment this string and push a new revision, so that all existing clients will update to it.
-			# The exact string has no significance, as long as it is unique. This does mean newer launchers might have older names if the upstream version changes.
-			# Whether the variable needs changing in any given scenario requires manual assessment.
+# The exact string has no significance, as long as it is unique. This does mean newer launchers might have older names if the upstream version changes.
+# Whether the variable needs changing in any given scenario requires manual assessment.
+
 genericDownloadError="The download process has failed unexpectedly. Please raise a Github issue, as this is likely a serious fault."
 
 
@@ -95,12 +97,12 @@ while getopts ":w:h" opt; do
 		: )	# Missing parameter to option
 			echo -e "\n-${OPTARG} requires an parameter!"
 			PrintHelp
-			exit 2;
+			exit 2
 			;;
 		\? )	# Unknown option
 			echo -e "\nUnknown arguement ${OPTARG}"
 			PrintHelp
-			exit 2;
+			exit 2
 			;;
 	esac
 done
