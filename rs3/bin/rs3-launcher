@@ -36,7 +36,7 @@ function notify(){
 	xmessage -center -timeout 60 -title RuneScape "$*"
 }
 
-if [[ $SNAP_ARCH != "amd64" ]]	# Check the game isn't being run on none AMD64 systems, E.G, Raspberry Pi.
+if [[ ${SNAP_ARCH} != "amd64" ]]	# Check the game isn't being run on none AMD64 systems, E.G, Raspberry Pi.
 then
 	notify "RS3 is not supported on this CPU architecture"
 	echo "RS3 is not supported on this CPU architecture"
@@ -118,12 +118,12 @@ fi
 
 unset XMODIFIERS
 
-if [[ ! -f "$SNAP_USER_COMMON/$launcher" ]]	# Check if the launcher needs updating
+if [[ ! -f "${SNAP_USER_COMMON}/${launcher}" ]]	# Check if the launcher needs updating
 then
 	echo -e "\nCouldn't find Jagex launcher, grabbing a fresh copy\n" 
 	DownloadRS3
 	SetupDirs
-	if [[ ! -f "${SNAP_USER_COMMON}/$launcher" ]]
+	if [[ ! -f "${SNAP_USER_COMMON}/${launcher}" ]]
 	then
 		echo "${genericDownloadError}" 	# General consistency checking
 		notify "${genericDownloadError}"

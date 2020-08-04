@@ -43,13 +43,14 @@ DownloadOSRS(){
 	# Check the connection succeeds. Since this uses HTTPS, the DMG file is transparently checked for validity.
 	if ! wget "https://www.runescape.com/downloads/OldSchool.dmg" -O "/tmp/osrs.dmg"	
 	then 
-		echo "Failed to get osrs.dmg"
-		notify "$networkError"
+		echo -e "\nFailed to get osrs.dmg\n"
+		notify "${networkError}"
 		exit 1
 	fi
 	if ! "${SNAP}/usr/lib/p7zip/7z" x "/tmp/osrs.dmg" -o"/tmp/osrs-dmg/" -aoa	# Extract the DMG. Non-success is likely due to the DMG file being upgraded to APFS over HFS+.
 	then
-		notify "$fileError"
+		echo -e "\nFailed to extract osrs.dmg\n"
+		notify "${fileError}"
 		exit 1
 	fi
 	cp "/tmp/osrs-dmg/Old School RuneScape/Old School RuneScape.app/Contents/Java/jagexappletviewer.jar" "${SNAP_USER_COMMON}/${launcher}"
@@ -59,7 +60,7 @@ DownloadOSRS(){
 if [[ -f "${SNAP_USER_DATA}/osrs-user-config" ]]
 then
 	echo -e "\nExecuting osrs-user-config\n"
-	source "$SNAP_USER_DATA/osrs-user-config"	# User can add exports/vars, such as changing $server, adding Java overrides, etc.
+	source "${SNAP_USER_DATA}/osrs-user-config"	# User can add exports/vars, such as changing $server, adding Java overrides, etc.
 	echo -e "\nFinished executing osrs-user-config\n"
 fi
 
