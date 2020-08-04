@@ -99,7 +99,7 @@ function DownloadRS3(){
 	
 }
 function SetupDirs(){
-	echo "Setting RS3 cache location to ${SNAP_USER_COMMON}"
+	echo -e "\nSetting RS3 cache location to ${SNAP_USER_COMMON}\n"
 	# Set up the cache location to exist in $SNAP_USER_COMMON rather than $HOME, preventing disk waste on upgrades when $HOME is snapshot.
 	# Additionally if this isn't set, snap revision updates will break RS3!
 	mkdir "${SNAP_USER_COMMON}/rs3cache/" -p
@@ -137,7 +137,7 @@ function PrintHelp(){
 	echo -e "\t do not use with -w"
 	echo -e "\n-w <number> connect to a specific world"
 	echo -e "\t do not use with -b"
-	echo -e "\n-p <number> Set the Pulseaudio latency value. This may aid with audio glitching"
+	echo -e "\n-p <number> set the Pulseaudio latency value. This may aid with audio glitching"
 	echo -e "\t do not use with -a"
 	echo -e "\n-a use the ALSA backend for audio. As this is a snap, it'll still proxy through Pulseaudio, but may help with audio glitching"
 	echo -e "\t do not use with -p"
