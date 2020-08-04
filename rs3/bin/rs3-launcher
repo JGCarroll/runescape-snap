@@ -175,7 +175,7 @@ while getopts ":w:bp:salh" opt; do
 	l )	# Legacy GPU support
 		echo -e "\n-l detected, lowering reported OpenGL compatibility values"
 		echo "This may not have any effect when using proprietary/ none MESA GPU drivers"
-		export export MESA_GL_VERSION_OVERRIDE='2.0'
+		export MESA_GL_VERSION_OVERRIDE='2.0'
 		export MESA_GLSL_VERSION_OVERRIDE='130'
 		;;
 	h )	# Print help
