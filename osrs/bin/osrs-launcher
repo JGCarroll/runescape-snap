@@ -81,14 +81,19 @@ fi
 function PrintHelp(){
 	echo -e "\nAccepted parameters:\n"
 	echo -e "\n-w <number> connect to a specific world\n"
+	echo -e "\n-s <number> override UI scale (may only support integers on some machines)\n"
 	echo -e "\n-h prints this message\n"
 }
 
-while getopts ":w:h" opt; do
+while getopts ":w:hs:" opt; do
 	case ${opt} in
 		w )	# Connect to a specific world
 			echo -e "\nAttempting to connect directly to world ${OPTARG}"
 			server="http://oldschool${OPTARG}.runescape.com/k=5/l=0/jav_config.ws"
+			;;
+		s )	# Set UI scale
+			echo -e "\nSet GDK_SCALE to ${OPTARG}"
+			export GDK_SCALE=${OPTARG}
 			;;
 		h )	# Print help
 			PrintHelp
