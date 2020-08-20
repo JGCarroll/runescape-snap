@@ -183,12 +183,6 @@ export LIBGL_DRIVERS_PATH=$RUNTIME/usr/lib/$ARCH/dri
 append_dir LD_LIBRARY_PATH $LIBGL_DRIVERS_PATH
 export LIBVA_DRIVERS_PATH=$RUNTIME/usr/lib/$ARCH/dri
 
-# Workaround in snapd for proprietary nVidia drivers mounts the drivers in
-# /var/lib/snapd/lib/gl that needs to be in LD_LIBRARY_PATH
-# Without that OpenGL using apps do not work with the nVidia drivers.
-# Ref.: https://bugs.launchpad.net/snappy/+bug/1588192
-append_dir LD_LIBRARY_PATH /var/lib/snapd/lib/gl
-
 # Unity7 export (workaround for https://launchpad.net/bugs/1638405)
 append_dir LD_LIBRARY_PATH $RUNTIME/usr/lib/$ARCH/libunity
 
@@ -197,7 +191,11 @@ append_dir LD_LIBRARY_PATH $RUNTIME/usr/lib/$ARCH/pulseaudio
 
 # EGL vendor files on glvnd enabled systems
 [ -d /var/lib/snapd/lib/glvnd/egl_vendor.d ] && \
-    append_dir __EGL_VENDOR_LIBRARY_DIRS /var/lib/snapd/lib/glvnd/egl_vendor.d
+    prepend_dir __EGL_VENDOR_LIBRARY_DIRS /var/lib/snapd/lib/glvnd/egl_vendor.d
+
+# EGL vendor files
+append_dir __EGL_VENDOR_LIBRARY_DIRS $RUNTIME/etc/glvnd/egl_vendor.d
+append_dir __EGL_VENDOR_LIBRARY_DIRS $RUNTIME/usr/share/glvnd/egl_vendor.d
 
 # Tell GStreamer where to find its plugins
 export GST_PLUGIN_PATH=$SNAP/usr/lib/$ARCH/gstreamer-1.0
@@ -541,6 +539,7 @@ ensure_dir_exists $IBUS_CONFIG_PATH
 [ -d $IBUS_CONFIG_PATH/bus ] && rm -rf $IBUS_CONFIG_PATH/bus
 ln -sfn $REALHOME/.config/ibus/bus $IBUS_CONFIG_PATH
 
+# RuneScape snap
 # Add gvfs to library path so that opening links works properly
 append_dir LD_LIBRARY_PATH $SNAP/usr/lib/$ARCH/gvfs
 
@@ -551,5 +550,10 @@ append_dir LD_LIBRARY_PATH $SNAP/usr/lib/$ARCH/gvfs
 [ $needs_update = true ] && echo "SNAP_DESKTOP_LAST_REVISION=$SNAP_REVISION" > $SNAP_USER_DATA/.last_revision
 
 wait_for_async_execs
+
+if [ -n "$SNAP_DESKTOP_DEBUG" ]; then
+  echo "desktop-launch elapsed time: " $(date +%s.%N --date="$START seconds ago") 
+  echo "Now running: exec $@"
+fi
 
 exec "$@"
