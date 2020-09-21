@@ -70,7 +70,6 @@ layout:
 apps:
   rs3:
     command: bin/rs3-launcher
-    desktop: usr/share/applications/rs3.desktop
     plugs:
       - desktop
       - desktop-legacy
@@ -91,7 +90,6 @@ apps:
 
   osrs:
     command: bin/osrs-launcher
-    desktop: usr/share/applications/osrs.desktop
     plugs:
       - desktop
       - desktop-legacy

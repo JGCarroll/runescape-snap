@@ -1,9 +1,8 @@
 [Desktop Entry]
-Name=RuneScape
+Name=Old School RuneScape
 Comment="The Massively Multiplayer Online Role Playing Game set in the fantasy land of Gielinor"
-Exec=rs3-launcher
-Icon=usr/share/pixmaps/rs3.png
+Exec=runescape.osrs
+Icon=${SNAP}/meta/gui/osrs.png
 Type=Application
 Categories=Game;
-MimeType=x-scheme-handler/rs-launch;x-scheme-handler/rs-launchs
 PrefersNonDefaultGPU=true
