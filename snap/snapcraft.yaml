@@ -110,4 +110,4 @@ apps:
       - bin/setup-sandbox
 
   reset:
-    command: reset-cache
+    command: bin/reset-cache
