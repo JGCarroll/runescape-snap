@@ -142,62 +142,63 @@ function PrintHelp(){
 	echo -e "\n-a use the ALSA backend for audio. As this is a snap, it'll still proxy through Pulseaudio, but may help with audio glitching"
 	echo -e "\t do not use with -p"
 	echo -e "\n-l lower the reported OpenGL profile, this may fix graphical glitches, particularly on older GPU's"
+	echo -e "\n-s force CPU rendering mode, this may allow the game to run in some niche scenarios (E.G, VirtualBox), with single digit FPS at low quality"
 	echo -e "\n-d prints GPU debug information, this may not work on proprietary graphics drivers"
 	echo -e "\n-h prints this message"
 }
 
 while getopts ":w:bp:salhd" opt; do
 	case ${opt} in
-	b )	# Attempt to run the beta engine
-		echo -e "\n-b detected, attempting to fetch beta client"
-		server='http://www.runescape.com/k=5/l=0/jav_config_beta.ws'
-		;;
-	w )	# Connect to a specific world
-		echo -e "\n-w detected, attempting to connect to world ${OPTARG}"
-		server="http://world${OPTARG}.runescape.com/k=5/l=\$(Language:0)/jav_config.ws"
-		;;
-	p )	# Pulseaudio latency
-		echo -e "\nSet Pulseaudio latency to ${OPTARG} (ms)"
-		echo "The optimum value for this varies from computer to computer, and may not consistently work."
-		export PULSE_LATENCY_MSEC=${OPTARG}
-		;;
-	s )	# Software GPU rendering for debugging GPU drivers
-		echo -e "\nWARNING; -s detected, running OpenGL on the CPU"
-		echo "Unless you have a supercomputer, this will have nearly unplayable FPS"
-		echo "This may not have any effect when using proprietary / none Mesa GPU drivers"
-		export LIBGL_ALWAYS_SOFTWARE=1
-		;;
-	a )	# ALSA backend for debugging audio
-		echo -e "\nUsing ALSA backend, please note this will still probably proxy through Pulseaudio due to snapd design"
-		export SDL_AUDIODRIVER=alsa
-		export PULSE_LATENCY_MSEC=""
-		export ALSA_CONFIG_PATH=${SNAP}/etc/asound.conf
-		;;
-	l )	# Legacy GPU support
-		echo -e "\n-l detected, lowering reported OpenGL compatibility values"
-		echo "This may not have any effect when using proprietary/ none Mesa GPU drivers"
-		export MESA_GL_VERSION_OVERRIDE='2.0'
-		export MESA_GLSL_VERSION_OVERRIDE='130'
-		;;
-	h )	# Print help
-		PrintHelp
-		exit
-		;;
-	d )	# print GPU debugging
-		echo -e "\nAttempting to print GPU debug information, this might not work on proprietary drivers"
-		export LIBGL_DEBUG=1
-		export MESA_DEBUG=1
-		;;
-	\? )	# Unknown option
-		echo -e "\nUnknown option: ${OPTARG}"
-		PrintHelp
-		exit 2
-		;;
-	: )	# Missing arguement to an option
-		echo -e "\n${OPTARG} requires a parameter"
-		PrintHelp
-		exit 2
-		;;
+		b )	# Attempt to run the beta engine
+			echo -e "\n-b detected, attempting to fetch beta client"
+			server='http://www.runescape.com/k=5/l=0/jav_config_beta.ws'
+			;;
+		w )	# Connect to a specific world
+			echo -e "\n-w detected, attempting to connect to world ${OPTARG}"
+			server="http://world${OPTARG}.runescape.com/k=5/l=\$(Language:0)/jav_config.ws"
+			;;
+		p )	# Pulseaudio latency
+			echo -e "\nSet Pulseaudio latency to ${OPTARG} (ms)"
+			echo "The optimum value for this varies from computer to computer, and may not consistently work."
+			export PULSE_LATENCY_MSEC=${OPTARG}
+			;;
+		s )	# Software GPU rendering for debugging GPU drivers
+			echo -e "\nWARNING; -s detected, running OpenGL on the CPU"
+			echo "Unless you have a supercomputer, this will have nearly unplayable FPS"
+			echo "This may not have any effect when using proprietary / none Mesa GPU drivers"
+			export LIBGL_ALWAYS_SOFTWARE=1
+			;;
+		a )	# ALSA backend for debugging audio
+			echo -e "\nUsing ALSA backend, please note this will still probably proxy through Pulseaudio due to snapd design"
+			export SDL_AUDIODRIVER=alsa
+			export PULSE_LATENCY_MSEC=""
+			export ALSA_CONFIG_PATH=${SNAP}/etc/asound.conf
+			;;
+		l )	# Legacy GPU support
+			echo -e "\n-l detected, lowering reported OpenGL compatibility values"
+			echo "This may not have any effect when using proprietary/ none Mesa GPU drivers"
+			export MESA_GL_VERSION_OVERRIDE='2.0'
+			export MESA_GLSL_VERSION_OVERRIDE='130'
+			;;
+		h )	# Print help
+			PrintHelp
+			exit
+			;;
+		d )	# print GPU debugging
+			echo -e "\nAttempting to print GPU debug information, this might not work on proprietary drivers"
+			export LIBGL_DEBUG=1
+			export MESA_DEBUG=1
+			;;
+		\? )	# Unknown option
+			echo -e "\nUnknown option: ${OPTARG}"
+			PrintHelp
+			exit 2
+			;;
+		: )	# Missing arguement to an option
+			echo -e "\n${OPTARG} requires a parameter"
+			PrintHelp
+			exit 2
+			;;
 	esac
 done
 
