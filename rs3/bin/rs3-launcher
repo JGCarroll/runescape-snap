@@ -25,7 +25,7 @@ server='http://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws'
 # This is the bootstrap file the launcher uses to setup the client.
 # It can be modified by the user to choose a specific world to launch every boot, if desired.
 
-launcher=".launcher-2.2.7"	# When a new launcher is available, increment this string and push a new revision, so that all existing clients will update to it.
+launcher=".launcher-2.2.8"	# When a new launcher is available, increment this string and push a new revision, so that all existing clients will update to it.
 # The exact string has no significance, as long as it is unique. This does mean newer launchers might have older names if the upstream version changes.
 # Whether the variable needs changing in any given scenario requires manual assessment.
 
