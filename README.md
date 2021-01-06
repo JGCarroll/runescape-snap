@@ -70,11 +70,11 @@ Please don't assume I might know about problems already, if they're not specific
 
 * The main scripts powering the snap can be found at `/snap/runescape/current/bin/` and are written in Bash, so what they do is plainly visible in every installation.
 
-* The downloads from Jagex are cryptographically verified by the snap. The snap itself is cryptographically verified by snapd itself, unless installed with the --dangerous flag which I will never distribute myself.
+* The downloads from Jagex are cryptographically verified by the snap. The snap itself is cryptographically verified by snapd itself, unless installed with the --dangerous flag.
 
 * The exact versions of installed packages are usually listed in `/snap/runescape/current/snap/manifest.yaml`, so they be inspected.
 
-* The production builds are usually done by Canonical themselves and can be reviewed [here](https://launchpad.net/~build.snapcraft.io/+snap/21d275790466ab89ca14debcc46363d5/), and as such are built by trusted servers.
+* The production builds are usually done by Githubs own runners and can be viewed [here](https://github.com/MrCarroll/runescape-snap/actions/).
 
 * Sandboxing is used where possible to isolate what this snap and the games can do. In the majority of scenarios, they can't even inspect your $HOME folder, though exact sandboxing depends on Linux distribution / patches. You can view what is allowed and control it via the snap CLI tools.
 
