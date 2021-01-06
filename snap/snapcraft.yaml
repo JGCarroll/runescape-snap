@@ -14,6 +14,7 @@ assumes:
   - command-chain
 architectures:
   - build-on: amd64
+compression: lzo
 
 parts:
   rs3-gpg:
