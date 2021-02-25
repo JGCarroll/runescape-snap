@@ -39,6 +39,7 @@ parts:
       - gnupg
       - wget
       - p7zip-full
+      - libopengl0
 
   osrs:
     plugin: dump
