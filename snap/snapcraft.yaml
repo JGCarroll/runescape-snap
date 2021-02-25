@@ -40,6 +40,7 @@ parts:
       - wget
       - p7zip-full
       - libopengl0
+      - libegl1
 
   osrs:
     plugin: dump
