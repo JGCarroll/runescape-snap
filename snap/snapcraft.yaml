@@ -1,5 +1,5 @@
 name: runescape
-base: core18
+base: core20
 title: RuneScape
 version: git
 summary: RuneScape, the free MMORPG by Jagex LTD
