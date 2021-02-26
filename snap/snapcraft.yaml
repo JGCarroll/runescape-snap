@@ -74,6 +74,7 @@ parts:
       
 environment:
   LD_PRELOAD: ${SNAP}/usr/lib/g_app_info_launch_default_for_uri.so
+  LANG: C.UTF-8
 
 layout:
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
