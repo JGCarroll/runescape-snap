@@ -188,6 +188,7 @@ while getopts ":w:bp:salhd" opt; do
 			echo -e "\nAttempting to print GPU debug information, this might not work on proprietary drivers"
 			export LIBGL_DEBUG=1
 			export MESA_DEBUG=1
+			export EGL_LOG_LEVEL=debug
 			;;
 		\? )	# Unknown option
 			echo -e "\nUnknown option: ${OPTARG}"
