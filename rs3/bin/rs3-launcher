@@ -167,6 +167,7 @@ while getopts ":w:bp:salhd" opt; do
 			echo "Unless you have a supercomputer, this will have nearly unplayable FPS"
 			echo "This may not have any effect when using proprietary / none Mesa GPU drivers"
 			export LIBGL_ALWAYS_SOFTWARE=1
+			export EGL_SOFTWARE=1
 			;;
 		a )	# ALSA backend for debugging audio
 			echo -e "\nUsing ALSA backend, please note this will still probably proxy through Pulseaudio due to snapd design"
