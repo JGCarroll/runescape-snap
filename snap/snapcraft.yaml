@@ -79,6 +79,8 @@ environment:
 layout:
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
     bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
+  /usr/share/libdrm:
+    bind: $SNAP/usr/share/libdrm
 
 
 
