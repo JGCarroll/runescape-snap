@@ -63,17 +63,7 @@ parts:
     plugin: dump
     source: utils/
     
-  java-portals-snap-patch:
-    plugin: make
-    source: https://github.com/mrcarroll/java-portals-snap-patch.git
-    source-type: git
-    stage-packages: 
-      - gvfs
-    organize:
-      'usr/lib/*/gvfs/*.so': 'usr/lib'
-      
 environment:
-  LD_PRELOAD: ${SNAP}/usr/lib/g_app_info_launch_default_for_uri.so
   LANG: C.UTF-8
 
 layout:
