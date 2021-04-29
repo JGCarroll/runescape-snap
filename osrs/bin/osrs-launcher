@@ -113,4 +113,4 @@ while getopts ":w:hs:" opt; do
 done
 
 echo -e "\nLaunching OSRS\n"
-"${SNAP}/usr/lib/jvm/default-java/bin/java" -Duser.home="${SNAP_USER_COMMON}" -Djava.system.class.loader=app.systemclassloader -Dcom.jagex.config="${server}" -Xmx512m -cp "${SNAP_USER_COMMON}/${launcher}" jagexappletviewer "."
+"${SNAP}/usr/lib/jvm/default-java/bin/java" --patch-module java.desktop=$SNAP/java-patches/compiled/java.desktop  -Duser.home="${SNAP_USER_COMMON}" -Djava.system.class.loader=app.systemclassloader -Dcom.jagex.config="${server}" -Xmx512m -cp "${SNAP_USER_COMMON}/${launcher}" jagexappletviewer "."

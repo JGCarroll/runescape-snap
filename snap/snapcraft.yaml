@@ -59,9 +59,9 @@ parts:
       - ca-certificates
       - ca-certificates-java
 
-  utils:
+  extras:
     plugin: dump
-    source: utils/
+    source: extras/
     
 environment:
   LANG: C.UTF-8
