@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=RuneScape
 Comment="The Massively Multiplayer Online Role Playing Game set in the fantasy land of Gielinor"
-Exec=runescape.rs3
+Exec=runescape.rs3 -a
 Icon=${SNAP}/meta/gui/rs3.png
 Type=Application
 Categories=Game;
