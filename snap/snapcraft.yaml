@@ -90,8 +90,6 @@ apps:
     environment:
       PULSE_LATENCY_MSEC: 150
       PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3.png' media.role='game'
-      SDL_VIDEODRIVER: x11
-      EGL_PLATFORM: x11
       SDL_VIDEO_X11_WMCLASS: RuneScape
       SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS: 0
     command-chain:
