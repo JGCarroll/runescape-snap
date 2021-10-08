@@ -72,21 +72,20 @@ layout:
   /usr/share/libdrm:
     bind: $SNAP/usr/share/libdrm
 
-
+plugs:
+  desktop:
+  desktop-legacy:
+  network:
+  audio-playback:
+  x11:
+  wayland:
+  opengl:
+  gsettings:
+  pulseaudio:
 
 apps:
   rs3:
     command: bin/rs3-launcher
-    plugs:
-      - desktop
-      - desktop-legacy
-      - network
-      - audio-playback
-      - x11
-      - wayland
-      - opengl
-      - gsettings
-      - pulseaudio
     environment:
       PULSE_LATENCY_MSEC: 150
       PULSE_PROP_OVERRIDE: application.name='RuneScape' application.icon_name='rs3.png' media.role='game'
@@ -97,16 +96,6 @@ apps:
 
   osrs:
     command: bin/osrs-launcher
-    plugs:
-      - desktop
-      - desktop-legacy
-      - network
-      - audio-playback
-      - x11
-      - wayland
-      - opengl
-      - gsettings
-      - pulseaudio
     environment:
       PULSE_PROP_OVERRIDE: application.name='Old School RuneScape' application.icon_name='osrs.png' media.role='game'
       ALSA_CONFIG_PATH: $SNAP/etc/asound.conf
