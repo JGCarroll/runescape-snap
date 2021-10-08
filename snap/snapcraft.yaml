@@ -13,6 +13,7 @@ license: MIT
 assumes: 
   - command-chain
   - snapd2.41
+  - common-data-dir
 architectures:
   - build-on: amd64
 compression: lzo
