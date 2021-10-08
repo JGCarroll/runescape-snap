@@ -12,6 +12,7 @@ confinement: strict
 license: MIT
 assumes: 
   - command-chain
+  - snapd2.41
 architectures:
   - build-on: amd64
 compression: lzo
@@ -81,7 +82,6 @@ plugs:
   wayland:
   opengl:
   gsettings:
-  pulseaudio:
 
 apps:
   rs3:
