@@ -100,6 +100,9 @@ public class XDesktopPeer implements DesktopPeer {
     }
 
     private void launch(URI uri) throws IOException {
-        Runtime.getRuntime().exec("xdg-open " + uri);
+        String[] launchCommand = new String[2];
+        launchCommand[0] = "xdg-open";
+        launchCommand[1] = uri.toString();
+        Runtime.getRuntime().exec(launchCommand);
     }
 }
