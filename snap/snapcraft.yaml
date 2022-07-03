@@ -10,7 +10,7 @@ type: app
 grade: stable
 confinement: strict
 license: MIT
-assumes: 
+assumes:
   - command-chain
   - snapd2.41
   - common-data-dir
@@ -26,11 +26,11 @@ parts:
   rs3-gpg:
     plugin: dump
     source: .
-    override-pull: 
+    override-pull:
       wget https://content.runescape.com/downloads/ubuntu/runescape.gpg.key -O $SNAPCRAFT_PART_SRC/runescape.gpg.key
     build-packages:
       - wget
-  
+
   rs3:
     plugin: dump
     source: rs3/
@@ -68,7 +68,7 @@ parts:
   extras:
     plugin: dump
     source: extras/
-    
+
 environment:
   LANG: C.UTF-8
 
@@ -104,7 +104,7 @@ apps:
     environment:
       PULSE_PROP_OVERRIDE: application.name='Old School RuneScape' application.icon_name='osrs.png' media.role='game'
       ALSA_CONFIG_PATH: $SNAP/etc/asound.conf
-    command-chain: 
+    command-chain:
       - bin/setup-sandbox
 
   reset:
