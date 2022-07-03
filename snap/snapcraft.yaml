@@ -64,6 +64,9 @@ parts:
     build-packages:
       - ca-certificates
       - ca-certificates-java
+    override-prime: |
+      snapcraftctl prime
+      rm usr/lib/jvm/java-11-openjdk-amd64/lib/security/blacklisted.certs # Dangling symlink
 
   extras:
     plugin: dump
