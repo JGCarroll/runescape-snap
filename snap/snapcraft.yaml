@@ -18,6 +18,10 @@ architectures:
   - build-on: amd64
 compression: lzo
 
+package-repositories:
+  - type: apt
+    ppa: kisak/kisak-mesa
+
 parts:
   rs3-gpg:
     plugin: dump
