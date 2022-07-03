@@ -141,7 +141,6 @@ function PrintHelp(){
 	echo -e "\t do not use with -a"
 	echo -e "\n-a use the ALSA backend for audio. As this is a snap, it'll still proxy through Pulseaudio, but may help with audio glitching"
 	echo -e "\t do not use with -p"
-	echo -e "\n-l lower the reported OpenGL profile, this may fix graphical glitches, particularly on older GPU's"
 	echo -e "\n-s force CPU rendering mode, this may allow the game to run in some niche scenarios (E.G, VirtualBox), with single digit FPS at low quality"
 	echo -e "\n-d prints GPU debug information, this may not work on proprietary graphics drivers"
 	echo -e "\n-h prints this message"
@@ -174,12 +173,6 @@ while getopts ":w:bp:salhd" opt; do
 			export SDL_AUDIODRIVER=alsa
 			export PULSE_LATENCY_MSEC=""
 			export ALSA_CONFIG_PATH=${SNAP}/etc/asound.conf
-			;;
-		l )	# Legacy GPU support
-			echo -e "\n-l detected, lowering reported OpenGL compatibility values"
-			echo "This may not have any effect when using proprietary/ none Mesa GPU drivers"
-			export MESA_GL_VERSION_OVERRIDE='2.0'
-			export MESA_GLSL_VERSION_OVERRIDE='130'
 			;;
 		h )	# Print help
 			PrintHelp
