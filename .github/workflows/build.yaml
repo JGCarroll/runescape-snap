@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Name of the Git branch to build.'     
+        description: 'Name of the Git branch to build.'
         required: true
         default: 'master'
       release-channel:
